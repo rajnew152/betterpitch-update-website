@@ -404,6 +404,7 @@
     const SLIDE_RATIO = 0.65;   // px of scroll per px of slide, as js/manifesto.js
     const OPEN_AT = 0.58;       // share of the stage the sentence has already travelled when the window is fully open (it flies in while the section comes out of the card)
     const EDGE = 0.14;          // share of the slide spent blending the stage out
+    const IN_SECS = 0.22;       // s — time constant of the stage (colour + glows) fading in once the sentence is full size
     const elastic = gsap.parseEase("elastic.out(1.2, 1)");
     let letters = [], centers = [], lefts = [], ramp = null, stageIn = null, stageOut = null;
     if (coverText && !coverText.dataset.split) {
@@ -442,19 +443,40 @@
       stageOut = gsap.utils.interpolate(v("--mf-mid"), v("--mf-below"));
       letters.forEach((l) => { l.color = null; });
     }
+    /* the sentence's opening words ("Now see"): shown inside the card, then grown
+       with it to full size (growTransform() below) */
+    let chunkMid = 0, chunkW = 1, pBox = { l: 0, t: 0, h: 1 };
     function measureCover() {
       centers = letters.map((l) => l.el.offsetLeft + l.el.offsetWidth / 2);
       lefts = letters.map((l) => l.el.offsetLeft);
+      if (!letters.length) return;
+      const words = coverText.getAttribute("aria-label").split(" ");
+      const last = Math.min(letters.length, words[0].length + (words[1] || "").length) - 1;
+      const R = lefts[last] + letters[last].el.offsetWidth;
+      chunkMid = (lefts[0] + R) / 2; chunkW = Math.max(1, R - lefts[0]);
+      pBox = { l: coverText.offsetLeft, t: coverText.offsetTop, h: Math.max(1, coverText.offsetHeight) };
+      coverText.style.transformOrigin = "0 0";
+    }
+    /* while the card grows (g.e 0 → 1, the layer scaled by g.sc about the card's
+       centre g.ox/g.oy): the opening words start centred in the card, sized to fit
+       it, and move / scale on screen to where the slide takes over at x */
+    function growTransform(g, x) {
+      const { e, sc, ox, oy, cw, ch } = g;
+      const kS = Math.min(1, (cw * 0.8) / chunkW, (ch * 0.4) / pBox.h);
+      const ts = (kS + (1 - kS) * e) / sc;
+      const sx = ox + (pBox.l + x + chunkMid - ox) * e, sy = oy + (pBox.t + pBox.h / 2 - oy) * e;
+      const tx = ox + (sx - ox) / sc - pBox.l - ts * chunkMid, ty = oy + (sy - oy) / sc - pBox.t - ts * pBox.h / 2;
+      return `translate3d(${tx.toFixed(1)}px,${ty.toFixed(1)}px,0) scale(${ts.toFixed(4)})`;
     }
     const smooth = (t) => { t = gsap.utils.clamp(0, 1, t); return t * t * (3 - 2 * t); };
     /* s: 0..1 slide progress; open: 0..1 how far the card has opened */
-    /* pre: 0..1 while the window opens — the first letters fly in as the section
-       comes out of the card, reaching slideStart() exactly when it fills the stage */
-    function paintCover(s, open, solid, pre) {
+    /* grow: set while the card fills / grows — the opening words sit in the card
+       and scale up with it (growTransform()), reaching slideStart() at full screen */
+    function paintCover(s, open, solid, grow) {
       if (!coverText) return;
       const w = cover.clientWidth;
-      const x = s <= 0 && pre !== undefined ? slideStart() * pre : slideStart() + (-overflow() - slideStart()) * s;
-      coverText.style.transform = `translate3d(${x.toFixed(1)}px,0,0)`;
+      const x = slideStart() + (-overflow() - slideStart()) * s;
+      coverText.style.transform = grow && s <= 0 ? growTransform(grow, x) : `translate3d(${x.toFixed(1)}px,0,0)`;
       letters.forEach((l, i) => {
         const c = ramp((centers[i] + x) / w);
         if (l.color !== c) { l.el.style.color = c; l.color = c; }
@@ -465,10 +487,21 @@
         l.el.style.transform = t >= 1 ? "" : `translate3d(0,${(l.y * k).toFixed(2)}%,0) rotate(${(l.r * k).toFixed(2)}deg)`;
       });
       const outT = smooth((s - (1 - EDGE)) / EDGE);
-      cover.style.setProperty("--mf-stage", outT > 0 ? stageOut(outT) : solid ? stageIn(1) : stageIn(open));
-      /* the glow waits until the card is mostly open: while the card is small its
-         sides would cut the glow in straight lines */
-      cover.style.setProperty("--mf-glow", (smooth((open - 0.55) / 0.45) * (1 - outT)).toFixed(3));
+      /* once the sentence is full size, the layer takes over the stage from the
+         section behind: its colour and glows fade in over the first stretch of the
+         half-second in time, not scroll (they used to switch on in one frame as the
+         grow ended, a visible jump) */
+      const inT = smooth(inShown);
+      cover.style.setProperty("--mf-stage", outT > 0 ? stageOut(outT) : solid ? stageIn(1) : stageIn(inT));
+      /* the brand glows (orange / magenta / violet over the dark stage) make the card
+         a window onto the glowing stage rather than a flat dark slab. They rise with
+         the dark fill (preT), from nothing to full by the time the card is full, so
+         the flat fill warms into the glow instead of switching to it; once the card
+         opens they stay on, and fade only as the sentence hands off below */
+      /* the card is now a window onto the stage itself, so the glows only come in
+         as the window opens (the stage deepens from see-through to its colour) */
+      const glowIn = inT;   // the stage behind carries the same glows until then
+      cover.style.setProperty("--mf-glow", (glowIn * (1 - outT)).toFixed(3));
       cover.style.setProperty("--mf-drift", s.toFixed(4));
     }
 
@@ -494,13 +527,26 @@
     }
     /* the cream's latest outline (from the canvas), redrawn every frame while it wobbles */
     let creamPhase = false, creamFront = "none";
-    if (cover) cream.onDraw((front) => { creamFront = front; if (creamPhase) creamClip(); });
+    /* the card merges into the section: the rising "cream" is no longer painted as a
+       solid slab. Its canvas stays hidden and the card itself is cut away below the
+       wavy front, so what rises in the card is the section's own background seen
+       through it (a window onto the stage), not a separate colour */
+    const creamCanvas = creamCard && creamCard.querySelector(".tk-card__cream");
+    if (cover && creamCanvas) creamCanvas.style.opacity = "0";
+    const clipCard = (front) => {
+      if (!creamCard) return;
+      if (front === "none") { creamCard.style.clipPath = ""; return; }
+      if (front === "full") { creamCard.style.clipPath = "polygon(0 0, 0 0, 0 0)"; return; }
+      const edge = front.slice().reverse().map(([u, v]) => `${(u * 100).toFixed(2)}% ${(Math.max(0, v) * 100).toFixed(2)}%`);
+      creamCard.style.clipPath = `polygon(0 0, 100% 0, ${edge.join(", ")})`;
+    };
+    if (cover) cream.onDraw((front) => { creamFront = front; clipCard(front); if (creamPhase) creamClip(); });
 
     /* the card-to-stage window's state (openWindow() below): declared before the
        ScrollTrigger, whose creation already calls progress() */
     const WIN_EASE = gsap.parseEase("power2.inOut");
     const WIN_FOLLOW = 0.11;                 // s — how closely the window trails the scroll
-    let winTarget = 0, winShown = 0, winRaf = 0, winLast = 0, slideS = 0;
+    let winTarget = 0, winShown = 0, winRaf = 0, winLast = 0, slideS = 0, preT = 0, inShown = 0;
 
     ScrollTrigger.create({
       trigger: pinHeight,
@@ -523,6 +569,11 @@
       const p = gsap.utils.clamp(0, 1, y / range);
       update(p);
       creamPhase = false;
+      /* how far the black has filled the card: the sentence fades in with it */
+      preT = y >= range ? 1 : norm(artOnly ? artMap(p) : p, ART_STACK_END, CREAM_END);
+      /* while the card is cut away below its rising front (clipCard above), the deck
+         cards stacked under it are hidden, so the cut shows the section itself */
+      container.classList.toggle("tk--window", preT > 0);
       if (y >= range) { slideS = gsap.utils.clamp(0, 1, (y - range) / hold); openWindow(1); }
       else if (p >= CREAM_END) { slideS = 0; openWindow(norm(p, CREAM_END, 1)); }
       /* the cover colour rises inside the card as before; the window waits for it */
@@ -555,7 +606,7 @@
     function openWindow(g) {
       winTarget = gsap.utils.clamp(0, 1, g);
       /* a jump (reload, section-nav link) lands straight on the new state */
-      if (Math.abs(winTarget - winShown) > 0.5) winShown = winTarget;
+      if (Math.abs(winTarget - winShown) > 0.5) { winShown = winTarget; inShown = winShown >= 1 ? 1 : 0; }
       if (!winRaf) { winLast = 0; winRaf = requestAnimationFrame(winTick); }
       applyWindow();
     }
@@ -565,58 +616,88 @@
       winLast = now;
       winShown += (winTarget - winShown) * (1 - Math.exp(-dt / WIN_FOLLOW));
       if (Math.abs(winTarget - winShown) < 0.0004) winShown = winTarget;
+      /* the stage fade-in follows the full-size state in time (see paintCover) */
+      const inTarget = winShown >= 1 ? 1 : 0;
+      inShown += (inTarget - inShown) * (1 - Math.exp(-dt / IN_SECS));
+      if (Math.abs(inTarget - inShown) < 0.002) inShown = inTarget;
       applyWindow();
-      if (winShown !== winTarget) winRaf = requestAnimationFrame(winTick);
+      if (winShown !== winTarget || inShown !== (winShown >= 1 ? 1 : 0)) winRaf = requestAnimationFrame(winTick);
     }
     function applyWindow() {
       if (coverBg) { coverBg.style.clipPath = ""; coverBg.classList.remove("is-on"); }
-      /* nothing opened yet: the card is the card */
-      if (winShown <= 0 && winTarget <= 0) {
+      /* nothing opened yet: the card is the card. While the black fills it, the
+         layer sits over the card with no stage colour of its own, so only the
+         opening words show, fading in as the black rises behind them */
+      const closed = winShown <= 0 && winTarget <= 0;
+      const textA = smooth((preT - 0.3) / 0.7);
+      if (closed && textA <= 0) {
         showCover(false);
         cover.style.clipPath = cover.style.transform = cover.style.transformOrigin = "";
+        cover.style.webkitMaskImage = cover.style.maskImage = "";
+        cover.style.background = "";
+        if (coverText) coverText.style.opacity = "";
         creamCard.style.visibility = "";
+        if (header) header.style.opacity = "";
         return;
       }
       showCover(true);
-      creamCard.style.visibility = "hidden";
+      creamCard.style.visibility = closed ? "" : "hidden";
+      cover.style.background = closed ? "transparent" : "";
+      if (coverText) coverText.style.opacity = closed ? textA.toFixed(3) : "";
       const e = WIN_EASE(winShown);
       const sw = container.clientWidth, sh = container.clientHeight;
+      let grow = null;
+      /* only the text grows: no card-shaped window opens. The layer is never clipped
+         and stays see-through until it reaches full size (the stage behind already
+         wears the same background), while the Platform title fades out as the
+         sentence grows over the screen */
+      if (header) header.style.opacity = closed ? "" : (1 - smooth(e / 0.7)).toFixed(3);
+      if (!closed && e < 1) cover.style.background = "transparent";
       if (e >= 1) {
         cover.style.clipPath = cover.style.transform = cover.style.transformOrigin = "";
+        cover.style.webkitMaskImage = cover.style.maskImage = "";
       } else {
         const sr = container.getBoundingClientRect(), r = creamCard.getBoundingClientRect();
-        const L0 = r.left - sr.left, T0 = r.top - sr.top, R0 = L0 + r.width, B0 = T0 + r.height;
-        /* the window's outline, on screen (stage coordinates) */
-        const L = L0 * (1 - e), T = T0 * (1 - e), Rr = R0 + (sw - R0) * e, B = B0 + (sh - B0) * e;
-        const rx = r.width * 0.068 * (1 - e), ry = r.height * 0.048 * (1 - e);
+        const L0 = r.left - sr.left, T0 = r.top - sr.top, R0 = L0 + r.width;
         /* the content: a miniature of the full stage, scaled about the card's centre
-           just enough to cover the card on every side (the card sits off the stage's
-           centre, so the nearest stage edge decides), growing to 1. The window and
-           the layer's edges both move linearly to the stage's edges, so the layer
-           covers the window for the whole grow */
+           (the card sits off the stage's centre, so the nearest stage edge decides),
+           growing to 1 — the sentence grows from card size to full screen */
         const ox = L0 + r.width / 2, oy = T0 + r.height / 2;
         const f0 = Math.min(1, Math.max(
           (r.width / 2) / Math.max(1, Math.min(ox, sw - ox)),
           (r.height / 2) / Math.max(1, Math.min(oy, sh - oy))));
         const sc = f0 + (1 - f0) * e;
-        /* the clip lives in the layer's own (unscaled) coordinates */
-        const ux = (x) => ox + (x - ox) / sc, uy = (y) => oy + (y - oy) / sc;
         cover.style.transformOrigin = `${ox.toFixed(1)}px ${oy.toFixed(1)}px`;
         cover.style.transform = `scale(${sc.toFixed(5)})`;
-        const pos = (v) => Math.max(0, v).toFixed(2);
-        cover.style.clipPath = `inset(${pos(uy(T))}px ${pos(sw - ux(Rr))}px ${pos(sh - uy(B))}px ${pos(ux(L))}px round ${(rx / sc).toFixed(2)}px / ${(ry / sc).toFixed(2)}px)`;
+        cover.style.clipPath = "";
+        /* no card-shaped window: a soft horizontal fade (mask) that widens from the
+           card's width to the full stage with the grow, so the words emerge with
+           feathered edges and only the text reads as growing */
+        const ux = (px) => ox + (px - ox) / sc;
+        /* the feather narrows to nothing as the grow completes, so dropping the mask
+           at the end changes nothing on screen (it used to vanish at full width,
+           popping the right-hand letters from faded to full) */
+        const L = ux(L0 * (1 - e)), Rr = ux(R0 + (sw - R0) * e), F = ((40 + 160 * e) * Math.min(1, (1 - e) / 0.25)) / sc;
+        const mask = e > 0.995 ? "" :
+          `linear-gradient(90deg, transparent ${(L - F * 0.2).toFixed(1)}px, #000 ${(L + F * 0.2).toFixed(1)}px, #000 ${(Rr - F).toFixed(1)}px, transparent ${Rr.toFixed(1)}px)`;
+        cover.style.webkitMaskImage = cover.style.maskImage = mask;
+        grow = { e, sc, ox, oy, cw: r.width, ch: r.height };
       }
       /* the stage inside the window is solid from the first frame (the card's colour,
-         --tk-cover = --mf-mid), so the hand-off from the card is seamless */
-      /* the words fly in early in the grow (ease-out), so they read in the window */
-      paintCover(slideS, winShown, true, 1 - (1 - e) * (1 - e));
+         --tk-cover = --mf-mid), so the hand-off from the card is seamless; the
+         opening words, already in the card, grow with the window */
+      /* not solid: the window's fill fades in from see-through (--mf-above) to the
+         stage colour as it opens, so the growing card blends into the section */
+      paintCover(slideS, winShown, false, grow);
     }
 
     function creamClip() {
       creamCard.style.visibility = "";
       if (creamFront === "none") { showCover(false); return; }
       showCover(true);
-      const { r, s, lx, ly } = coverGeometry();
+      const { r, s, f, lx, ly } = coverGeometry();
+      /* the opening words already sit in the card as its colour rises */
+      paintCover(0, 0, true, { e: 0, sc: f, ox: r.left + r.width / 2 - s.left, oy: r.top + r.height / 2 - s.top, cw: r.width, ch: r.height });
       const rx = r.width * 0.068, ry = r.height * 0.048;
       /* the card's rounded outline: how far below its top edge the outline starts at x */
       const edgeTop = (x) => {
@@ -625,18 +706,22 @@
       };
       const pts = [];
       const wave = creamFront === "full" ? Array.from({ length: 49 }, (_, i) => [i / 48, 0]) : creamFront;
+      /* the sides and bottom run PAD px past the card's outline: on the exact edge the
+         anti-aliased clip let a hairline of the orange card show along the bottom */
+      const PAD = 2;
       for (const [u, v] of wave) {
         const x = r.left + u * r.width;
-        pts.push([x, r.top + Math.max(v * r.height, edgeTop(x))]);
+        const px = u <= 0 ? x - PAD : u >= 1 ? x + PAD : x;
+        pts.push([px, r.top + Math.max(v * r.height, edgeTop(x))]);
       }
       /* the bottom corners of the card, right then left */
       for (let k = 0; k <= 6; k++) {
         const a = (Math.PI / 2) * (k / 6);
-        pts.push([r.right - rx + rx * Math.cos(a), r.bottom - ry + ry * Math.sin(a)]);
+        pts.push([r.right - rx + (rx + PAD) * Math.cos(a), r.bottom - ry + (ry + PAD) * Math.sin(a)]);
       }
       for (let k = 0; k <= 6; k++) {
         const a = Math.PI / 2 + (Math.PI / 2) * (k / 6);
-        pts.push([r.left + rx + rx * Math.cos(a), r.bottom - ry + ry * Math.sin(a)]);
+        pts.push([r.left + rx + (rx + PAD) * Math.cos(a), r.bottom - ry + (ry + PAD) * Math.sin(a)]);
       }
       cover.style.clipPath = "polygon(" + pts.map(([x, y]) => `${lx(x).toFixed(1)}px ${ly(y).toFixed(1)}px`).join(",") + ")";
       if (coverBg) coverBg.style.clipPath = "polygon(" + pts.map(([x, y]) => `${(x - s.left).toFixed(1)}px ${(y - s.top).toFixed(1)}px`).join(",") + ")";

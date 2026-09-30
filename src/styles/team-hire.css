@@ -1,0 +1,547 @@
+/* =============================================================================
+   team-hire.css — the big "We're hiring" card on the right of the team panel,
+   holding four small cards. Each card has its own colour, entrance, hover and
+   idle animation, and its own kind of content:
+     .hc--roles  pink     slide-in   · filter + role list, light sweep
+     .hc--cv     white/pink flip-in  · checklist + progress ring, floating doc
+     .hc--steps  white/orange spring-up  · timeline that auto-advances
+     .hc--life   orange   zoom-blur  · perk carousel, rising bubbles
+   Loaded after team.css, whose .team-hire styles (gradient, badge, orb, apply
+   pill) it builds on. Markup: components/Journey/TeamHire.jsx. Behaviour:
+   legacy/team.js.
+   ============================================================================= */
+@media (min-width: 901px) {
+  .team-panel { padding-right: 0; }
+  .team-panel__inner {
+    width: 100%;
+    grid-template-columns: minmax(0, 0.78fr) minmax(0, 1.22fr);
+    height: calc(100vh - var(--team-panel-top));
+  }
+  .team-list { width: 100%; max-width: 540px; justify-self: end; padding-bottom: 5vh; }
+  /* inset from the screen's right and bottom edges, so it reads as a card with all
+     four corners rounded instead of running off the page */
+  .team-hire {
+    margin: 0 clamp(16px, 2.2vw, 36px) clamp(16px, 3.2vh, 36px) 0;
+    border-radius: clamp(22px, 3.4vh, 34px);
+  }
+}
+
+.team-hire {
+  align-items: stretch;
+  justify-content: flex-start;
+  gap: clamp(10px, 1.5vh, 14px);
+  padding: clamp(16px, 2.6vh, 28px) clamp(16px, 2.2vw, 34px) clamp(14px, 2.2vh, 24px);
+  text-align: left;
+}
+
+/* header: orb + title, badge on the right */
+.hire-head { display: flex; align-items: center; gap: 12px; }
+.hire-head .team-hire__orb { width: 34px; height: 34px; }
+.hire-head__text { flex: 1; min-width: 0; }
+.hire-head .team-hire__from { margin: 0 0 3px; }
+.hire-head__title {
+  margin: 0;
+  font-size: clamp(16px, 2.6vh, 24px);
+  font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+}
+.hire-head .team-hire__badge { position: static; flex: none; }
+
+/* the grid (scrolls inside the big card on short screens) */
+.hire-grid {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  grid-auto-rows: minmax(min-content, 1fr);
+  gap: clamp(10px, 1.4vw, 16px);
+  padding: 4px;
+  margin: -4px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.35) transparent;
+}
+@media (min-width: 901px) {
+  .hire-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-rows: repeat(2, minmax(min-content, 1fr));
+    gap: clamp(12px, 1.8vh, 18px) clamp(14px, 1.8vw, 26px);
+  }
+}
+
+/* footer */
+.hire-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.hire-foot p { margin: 0; font-size: 12.5px; font-weight: 500; color: rgba(255, 255, 255, 0.75); }
+.hire-foot .team-hire__btn { flex: none; padding: 10px 20px; }
+
+/* ============================================================== shared card */
+.hc {
+  --c1: #7c3aed; --c2: #4338ca; --glow: rgba(124, 58, 237, 0.55);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(8px, 1.3vh, 12px);
+  min-width: 0;
+  padding: clamp(12px, 1.8vh, 16px) clamp(12px, 1.2vw, 18px);
+  overflow: hidden;
+  border-radius: 22px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  background:
+    radial-gradient(90% 70% at 100% 0%, rgba(255, 255, 255, 0.22), transparent 60%),
+    linear-gradient(150deg, var(--c1) 0%, var(--c2) 100%);
+  box-shadow: 0 20px 40px -20px var(--glow), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  color: #fff;
+  isolation: isolate;
+  transition: transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.45s ease;
+}
+.hc > * { position: relative; z-index: 1; }
+.hc:hover, .hc:focus-within { box-shadow: 0 28px 54px -18px var(--glow), inset 0 1px 0 rgba(255, 255, 255, 0.4); }
+.hc button { font: inherit; color: inherit; cursor: pointer; }
+
+.hc__top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.hc__tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 4px 11px 4px 4px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.hc__tag i {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #fff;
+  color: var(--c1);
+  font-style: normal;
+  transition: transform 0.5s cubic-bezier(0.3, 1.6, 0.5, 1);
+}
+.hc__tag svg { width: 11px; height: 11px; }
+.hc:hover .hc__tag i { transform: rotate(-14deg) scale(1.15); }
+.hc__meta { font-size: 11.5px; font-weight: 600; opacity: 0.8; }
+
+/* ============================================================= 1. open roles
+   violet → indigo · slides in from the left · a light sweeps across · hover:
+   nudges right */
+.hc--roles { --c1: #8b5cf6; --c2: #4338ca; --glow: rgba(99, 60, 230, 0.6); }
+.hc--roles::before {             /* the light sweep */
+  content: "";
+  position: absolute;
+  inset: -20%;
+  z-index: 0;
+  background: linear-gradient(105deg, transparent 40%, rgba(255, 255, 255, 0.2) 50%, transparent 60%);
+  transform: translateX(-80%);
+  animation: hc-sweep 5.5s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes hc-sweep { 0%, 50% { transform: translateX(-80%); } 90%, 100% { transform: translateX(80%); } }
+.hc--roles:hover { transform: translateX(4px); }
+.hc__live { display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; font-weight: 600; }
+.hc__live b {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #4ade80;
+  animation: hc-live 1.8s ease-out infinite;
+}
+@keyframes hc-live { 0% { box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.7); } 100% { box-shadow: 0 0 0 8px rgba(74, 222, 128, 0); } }
+.hc-filter { display: flex; gap: 4px; padding: 3px; border-radius: 999px; background: rgba(0, 0, 0, 0.2); align-self: flex-start; }
+.hc-filter button {
+  padding: 5px 11px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  font-size: 11.5px;
+  font-weight: 600;
+  opacity: 0.8;
+  transition: background 0.25s ease, color 0.25s ease, opacity 0.25s ease;
+}
+.hc-filter button:hover { opacity: 1; }
+.hc-filter button.is-active { background: #fff; color: #5b21b6; opacity: 1; }
+.hc-roles { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.hc-roles li { transition: opacity 0.35s ease, transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1); transition-delay: calc(var(--i, 0) * 50ms); }
+.hc-roles li.is-hidden { display: none; }
+.hc-roles li.is-entering { opacity: 0; transform: translateX(-12px); }
+.hc-roles a {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: #fff;
+  text-decoration: none;
+  transition: background 0.25s ease;
+}
+.hc-roles a:hover { background: rgba(255, 255, 255, 0.22); }
+.hc-roles strong { display: block; font-size: 13px; font-weight: 600; }
+.hc-roles em { display: block; margin-top: 1px; font-size: 11px; font-style: normal; opacity: 0.75; }
+.hc-roles svg { width: 15px; height: 15px; flex: none; transition: transform 0.3s ease; }
+.hc-roles a:hover svg { transform: translateX(4px); }
+
+/* =============================================================== 2. send CV
+   emerald → teal · flips in · the doc floats, the ring fills as you tick ·
+   hover: tilts */
+.hc--cv { --c1: #10b981; --c2: #0e7490; --glow: rgba(16, 150, 120, 0.6); }
+.hc--cv:hover { transform: perspective(800px) rotateY(-4deg) rotateX(2deg); }
+.hc-cv { display: flex; align-items: center; gap: clamp(10px, 1.2vw, 16px); }
+.hc-ring { position: relative; flex: none; width: clamp(62px, 9vh, 78px); aspect-ratio: 1; }
+.hc-ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+.hc-ring circle { fill: none; stroke: rgba(255, 255, 255, 0.2); stroke-width: 3; }
+.hc-ring .hc-ring__fill {
+  stroke: #fff;
+  stroke-linecap: round;
+  stroke-dasharray: 100;
+  stroke-dashoffset: calc(100 - var(--p, 0) * 100);
+  transition: stroke-dashoffset 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+  filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.7));
+}
+.hc-ring__num { position: absolute; inset: 0; display: grid; place-items: center; padding-top: 14px; font-size: 11px; font-weight: 700; }
+.hc-ring__doc {
+  position: absolute;
+  left: 50%;
+  top: 22%;
+  translate: -50% 0;
+  animation: hc-float 3s ease-in-out infinite;
+}
+.hc-ring__doc svg { width: 16px; height: 16px; }
+@keyframes hc-float { 0%, 100% { transform: translateY(0) rotate(-4deg); } 50% { transform: translateY(-3px) rotate(4deg); } }
+.hc-checks { display: grid; gap: 5px; flex: 1; min-width: 0; margin: 0; padding: 0; list-style: none; }
+.hc-checks button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 6px 9px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.12);
+  font-size: 12px;
+  font-weight: 500;
+  text-align: left;
+  transition: background 0.25s ease;
+}
+.hc-checks button:hover { background: rgba(0, 0, 0, 0.22); }
+.hc-checks__box {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 17px;
+  height: 17px;
+  border-radius: 5px;
+  border: 1.5px solid rgba(255, 255, 255, 0.7);
+  transition: background 0.25s ease, border-color 0.25s ease;
+}
+.hc-checks__box svg { width: 11px; height: 11px; stroke-width: 3; color: #047857; transform: scale(0); transition: transform 0.35s cubic-bezier(0.3, 1.8, 0.5, 1); }
+.hc-checks button[aria-pressed="true"] .hc-checks__box { background: #fff; border-color: #fff; }
+.hc-checks button[aria-pressed="true"] .hc-checks__box svg { transform: scale(1); }
+.hc-cv__note { margin: 0; font-size: 12px; font-weight: 500; opacity: 0.85; transition: opacity 0.3s ease; }
+.hc--cv.is-ready .hc-cv__note { opacity: 1; font-weight: 600; }
+.hc--cv.is-ready .hc-ring { animation: hc-pop 0.6s cubic-bezier(0.3, 1.6, 0.5, 1); }
+@keyframes hc-pop { 50% { transform: scale(1.12); } }
+
+/* ============================================================ 3. how we hire
+   amber → orange · springs up from below · the progress line fills step by
+   step · hover: lifts */
+.hc--steps { --c1: #f59e0b; --c2: #ea580c; --glow: rgba(234, 120, 12, 0.6); }
+.hc--steps:hover { transform: translateY(-6px); }
+.hc-steps {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin: 4px 0 0;
+  padding: 0;
+  list-style: none;
+}
+/* the rail, and its fill up to the active step */
+.hc-steps::before,
+.hc-steps::after {
+  content: "";
+  position: absolute;
+  top: 13px;
+  left: 12.5%;
+  height: 3px;
+  border-radius: 3px;
+}
+.hc-steps::before { right: 12.5%; background: rgba(255, 255, 255, 0.25); }
+.hc-steps::after {
+  width: calc(75% * var(--step, 0) / 3);
+  background: #fff;
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.8);
+  transition: width 0.7s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.hc-steps button {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+}
+.hc-steps__dot {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #b45309;
+  border: 2px solid rgba(255, 255, 255, 0.6);
+  font-size: 11.5px;
+  font-weight: 700;
+  transition: background 0.3s ease, color 0.3s ease, transform 0.4s cubic-bezier(0.3, 1.6, 0.5, 1);
+}
+.hc-steps button.is-done .hc-steps__dot { background: #fff; color: #c2410c; border-color: #fff; }
+.hc-steps button.is-active .hc-steps__dot { background: #fff; color: #c2410c; border-color: #fff; transform: scale(1.18); box-shadow: 0 0 0 5px rgba(255, 255, 255, 0.25); }
+.hc-steps__label { font-size: 11px; font-weight: 600; text-align: center; opacity: 0.85; }
+.hc-steps button.is-active .hc-steps__label { opacity: 1; }
+.hc-steps__detail {
+  display: grid;
+  min-height: 0;
+  padding: 9px 12px;
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+}
+.hc-steps__detail p {
+  grid-area: 1 / 1;
+  margin: 0;
+  font-size: 12.5px;
+  font-weight: 500;
+  line-height: 1.4;
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 0.35s ease, transform 0.35s ease;
+}
+.hc-steps__detail p.is-active { opacity: 1; transform: none; }
+
+/* ======================================================= 4. life at Better Pitch
+   sky → blue · zooms out of a blur · bubbles rise behind · the perks rotate ·
+   hover: grows */
+.hc--life { --c1: #0ea5e9; --c2: #2563eb; --glow: rgba(30, 110, 235, 0.6); }
+.hc--life:hover { transform: scale(1.025); }
+.hc-bubbles { position: absolute !important; inset: 0; z-index: 0 !important; pointer-events: none; }
+.hc-bubbles i {
+  position: absolute;
+  bottom: -20px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.25);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.35);
+  animation: hc-rise 7s linear infinite;
+}
+.hc-bubbles i:nth-child(1) { left: 10%; animation-delay: 0s; }
+.hc-bubbles i:nth-child(2) { left: 28%; width: 6px; height: 6px; animation-delay: -2.5s; animation-duration: 5.5s; }
+.hc-bubbles i:nth-child(3) { left: 47%; width: 14px; height: 14px; animation-delay: -4s; animation-duration: 8s; }
+.hc-bubbles i:nth-child(4) { left: 66%; animation-delay: -1s; animation-duration: 6.5s; }
+.hc-bubbles i:nth-child(5) { left: 82%; width: 7px; height: 7px; animation-delay: -3.2s; }
+.hc-bubbles i:nth-child(6) { left: 92%; width: 12px; height: 12px; animation-delay: -5.5s; animation-duration: 9s; }
+@keyframes hc-rise {
+  0% { transform: translate(0, 0); opacity: 0; }
+  15% { opacity: 1; }
+  50% { transform: translate(8px, -120px); }
+  100% { transform: translate(-6px, -260px); opacity: 0; }
+}
+.hc-perks { position: relative; display: grid; flex: 1; align-items: center; }
+.hc-perk {
+  grid-area: 1 / 1;
+  opacity: 0;
+  transform: translateX(24px);
+  transition: opacity 0.5s ease, transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+  pointer-events: none;
+}
+.hc-perk.is-active { opacity: 1; transform: none; pointer-events: auto; }
+.hc-perk.is-leaving { opacity: 0; transform: translateX(-24px); }
+.hc-perk strong {
+  display: block;
+  font-size: clamp(24px, 3.8vh, 34px);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+.hc-perk p { margin: 6px 0 0; font-size: 12.5px; font-weight: 500; line-height: 1.4; opacity: 0.92; }
+.hc-dots { display: flex; gap: 6px; }
+.hc-dots button { padding: 4px 0; border: 0; background: none; }
+.hc-dots span {
+  display: block;
+  width: 8px;
+  height: 4px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.4);
+  transition: width 0.35s ease, background 0.35s ease;
+}
+.hc-dots button.is-active span { width: 22px; background: #fff; }
+
+/* ========================================= entrances (legacy/team.js adds .is-in) */
+.hire-grid.js-reveal:not(.is-in) .hc { opacity: 0; }
+.hire-grid.js-reveal.is-in .hc--roles { animation: hc-in-slide 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) backwards; }
+.hire-grid.js-reveal.is-in .hc--cv { animation: hc-in-flip 0.9s cubic-bezier(0.2, 0.8, 0.2, 1) 0.12s backwards; }
+.hire-grid.js-reveal.is-in .hc--steps { animation: hc-in-spring 0.9s cubic-bezier(0.3, 1.5, 0.5, 1) 0.24s backwards; }
+.hire-grid.js-reveal.is-in .hc--life { animation: hc-in-zoom 0.9s cubic-bezier(0.2, 0.8, 0.2, 1) 0.36s backwards; }
+@keyframes hc-in-slide { from { opacity: 0; transform: translateX(-60px) skewX(6deg); } }
+@keyframes hc-in-flip { from { opacity: 0; transform: perspective(900px) rotateY(75deg); } }
+@keyframes hc-in-spring { from { opacity: 0; transform: translateY(60px) scale(0.9); } }
+@keyframes hc-in-zoom { from { opacity: 0; transform: scale(1.18); filter: blur(14px); } }
+
+/* ================================================================ responsive */
+@media (max-width: 900px) {
+  .hire-head .team-hire__badge { display: none; }
+  .hire-grid { grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); }
+}
+@media (max-width: 520px) {
+  .hire-foot p { display: none; }
+  .hire-foot .team-hire__btn { flex: 1; justify-content: center; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hc, .hc::before, .hc *, .hire-grid.js-reveal.is-in .hc { animation: none !important; }
+  .hc:hover { transform: none; }
+  .hc-bubbles { display: none; }
+}
+
+/* ---- fit: one-line role rows, a centred CV block, and a clean hand-over between
+   step texts (the old one is gone before the new one arrives) ---- */
+.hc-roles { gap: 5px; }
+.hc-roles a { padding: 7px 11px; }
+.hc-roles a > span { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; flex: 1; min-width: 0; }
+.hc-roles strong { font-size: 12.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hc-roles em { margin-top: 0; font-size: 10.5px; white-space: nowrap; }
+.hc-cv { flex: 1; }
+.hc-steps__detail p { transition: opacity 0.18s ease, transform 0.18s ease; }
+.hc-steps__detail p.is-active { transition: opacity 0.3s ease 0.18s, transform 0.3s ease 0.18s; }
+@media (max-width: 1440px) {
+  .hc-roles em { display: none; }
+}
+
+/* ============================================================================
+   Bento: unequal boxes (a big one beside a small one, flipped on the second
+   row) and two white cards with full-colour text (CV: emerald, steps: amber)
+   ============================================================================ */
+@media (min-width: 901px) {
+  .hire-grid {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    grid-template-rows: minmax(min-content, 1.12fr) minmax(min-content, 0.88fr);
+  }
+  .hc--roles { grid-column: span 3; }
+  .hc--cv { grid-column: span 2; }
+  .hc--steps { grid-column: span 2; }
+  .hc--life { grid-column: span 3; }
+  /* the narrow CV card: a smaller ring, so the checklist keeps its room */
+  .hc--cv .hc-ring { width: clamp(52px, 7.5vh, 64px); }
+  .hc--cv .hc-checks button { font-size: 11.5px; padding: 5px 8px; }
+}
+
+/* shared white-card look */
+.hc--cv,
+.hc--steps {
+  border-color: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 22px 44px -22px rgba(80, 0, 40, 0.5), inset 0 1px 0 #ffffff;
+}
+.hc--cv:hover, .hc--steps:hover { box-shadow: 0 30px 56px -20px rgba(80, 0, 40, 0.6), 0 0 0 1px #ffffff; }
+.hc--cv .hc__tag,
+.hc--steps .hc__tag { background: color-mix(in srgb, var(--ink) 8%, transparent); border-color: color-mix(in srgb, var(--ink) 22%, transparent); color: var(--ink); }
+.hc--cv .hc__tag i,
+.hc--steps .hc__tag i { background: var(--c1); color: #ffffff; }
+
+/* white card 1: send your CV — emerald text */
+.hc--cv {
+  --ink: #047857;
+  color: var(--ink);
+  background:
+    radial-gradient(80% 70% at 100% 0%, rgba(16, 185, 129, 0.14), transparent 65%),
+    #ffffff;
+}
+.hc--cv .hc-ring circle { stroke: rgba(16, 185, 129, 0.18); }
+.hc--cv .hc-ring .hc-ring__fill { stroke: #10b981; filter: drop-shadow(0 0 4px rgba(16, 185, 129, 0.5)); }
+.hc--cv .hc-ring__num { color: #065f46; }
+.hc--cv .hc-ring__doc { color: #10b981; }
+.hc--cv .hc-checks button {
+  color: #065f46;
+  background: rgba(16, 185, 129, 0.07);
+  border-color: rgba(16, 185, 129, 0.25);
+}
+.hc--cv .hc-checks button:hover { background: rgba(16, 185, 129, 0.14); }
+.hc--cv .hc-checks__box { border-color: #10b981; }
+.hc--cv .hc-checks__box svg { color: #ffffff; }
+.hc--cv .hc-checks button[aria-pressed="true"] .hc-checks__box { background: #10b981; border-color: #10b981; }
+.hc--cv .hc-cv__note { color: #047857; opacity: 1; }
+
+/* white card 2: how we hire — amber / orange text */
+.hc--steps {
+  --ink: #c2410c;
+  color: var(--ink);
+  background:
+    radial-gradient(80% 70% at 0% 0%, rgba(245, 158, 11, 0.16), transparent 65%),
+    #ffffff;
+}
+.hc--steps .hc__meta { color: #c2410c; opacity: 1; }
+.hc--steps .hc-steps::before { background: rgba(234, 88, 12, 0.18); }
+.hc--steps .hc-steps::after { background: linear-gradient(90deg, #f59e0b, #ea580c); box-shadow: 0 0 8px rgba(234, 88, 12, 0.5); }
+.hc--steps .hc-steps__dot { background: #ffffff; color: #c2410c; border-color: rgba(234, 88, 12, 0.35); }
+.hc--steps .hc-steps button.is-done .hc-steps__dot,
+.hc--steps .hc-steps button.is-active .hc-steps__dot {
+  background: linear-gradient(135deg, #f59e0b, #ea580c);
+  color: #ffffff;
+  border-color: transparent;
+}
+.hc--steps .hc-steps button.is-active .hc-steps__dot { box-shadow: 0 0 0 5px rgba(234, 88, 12, 0.18); }
+.hc--steps .hc-steps__label { color: #9a3412; }
+.hc--steps .hc-steps__detail { background: rgba(245, 158, 11, 0.1); border-color: rgba(234, 88, 12, 0.2); color: #7c2d12; }
+/* laptops: tighter cards so both bento rows fit */
+@media (min-width: 901px) and (max-width: 1440px) {
+  .hc { gap: 7px; padding: 11px 14px; }
+  .hc-roles a { padding: 6px 10px; }
+  .hc-steps__detail { padding: 7px 10px; }
+  .hc-steps__detail p { font-size: 12px; }
+}
+
+/* ============================================================================
+   Orange & pink: the big card is one smooth orange → coral → pink run, and the
+   four cards stay inside the same family (roles: pink, CV: white with pink,
+   steps: white with orange, life: orange → coral) instead of violet / emerald /
+   sky, so the whole panel reads as one warm gradient
+   ============================================================================ */
+.team-hire {
+  background:
+    radial-gradient(120% 90% at 0% 0%, rgba(255, 170, 90, 0.55) 0%, transparent 55%),
+    radial-gradient(90% 80% at 100% 100%, rgba(236, 40, 120, 0.5) 0%, transparent 60%),
+    linear-gradient(135deg, #ff8a3d 0%, #ff6a4d 28%, #fb4f6f 55%, #ee3a86 80%, #db2777 100%);
+  box-shadow: 0 30px 80px -20px rgba(240, 70, 100, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+
+/* open roles: rose → deep pink */
+.hc--roles { --c1: #ff5c8a; --c2: #d6246e; --glow: rgba(214, 36, 110, 0.55); }
+.hc-filter button.is-active { color: #c2185b; }
+
+/* life at Better Pitch: orange → coral */
+.hc--life { --c1: #ffa24c; --c2: #ff5a5f; --glow: rgba(255, 100, 80, 0.55); }
+
+/* send your CV: white card, pink text and accents (was emerald) */
+.hc--cv {
+  --c1: #ec4899;
+  --ink: #be185d;
+  background:
+    radial-gradient(80% 70% at 100% 0%, rgba(236, 72, 153, 0.14), transparent 65%),
+    #ffffff;
+}
+.hc--cv .hc-ring circle { stroke: rgba(236, 72, 153, 0.18); }
+.hc--cv .hc-ring .hc-ring__fill { stroke: #ec4899; filter: drop-shadow(0 0 4px rgba(236, 72, 153, 0.5)); }
+.hc--cv .hc-ring__num { color: #9d174d; }
+.hc--cv .hc-ring__doc { color: #ec4899; }
+.hc--cv .hc-checks button { color: #9d174d; background: rgba(236, 72, 153, 0.07); border-color: rgba(236, 72, 153, 0.25); }
+.hc--cv .hc-checks button:hover { background: rgba(236, 72, 153, 0.14); }
+.hc--cv .hc-checks__box { border-color: #ec4899; }
+.hc--cv .hc-checks button[aria-pressed="true"] .hc-checks__box { background: #ec4899; border-color: #ec4899; }
+.hc--cv .hc-cv__note { color: #be185d; }

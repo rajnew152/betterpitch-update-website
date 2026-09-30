@@ -1,6 +1,7 @@
 import kunalJaggiWebp from '../../assets/team/kunal-jaggi.webp';
 import priteshJaiswalWebp from '../../assets/team/pritesh-jaiswal.webp';
 import srishtiKhatriWebp from '../../assets/team/srishti-khatri.webp';
+import TeamHire from './TeamHire.jsx';
 
 /*
  * Appended sections replicated from https://guillaumezhu.com/
@@ -18,12 +19,12 @@ export default function Journey() {
             <div className="traj__visual traj__visual--right" />
           </div>
           <div className="traj__center">
-            <div className="traj__sentence is-today">Emotion</div>
-            <div className="traj__sentence is-dialogue">meets</div>
-            <div className="traj__sentence is-both">outcomes.</div>
+            <div className="traj__sentence is-today">The people</div>
+            <div className="traj__sentence is-dialogue">behind</div>
+            <div className="traj__sentence is-both">betterpitch</div>
           </div>
         </div>
-        {/* Better Pitch team: "Meet the team" title over the pinned "outcomes." gradient, */}
+        {/* Better Pitch team: "Meet the team" title over the pinned "betterpitch" gradient, */}
         {/* then a kora-style single panel (kora.framer.media): the three members */}
         {/* listed on the left (click opens a profile dialog) and a "we're hiring" */}
         {/* card on the right (css/team.css, js/team.js). brand-content.js drops this */}
@@ -80,72 +81,8 @@ export default function Journey() {
                   <span className="team-row__plus" aria-hidden="true">+</span>
                 </button>
               </div>
-              {/* hiring card in the style of the hero's assistant cards: a careers */}
-              {/* assistant message, a composer with quick replies, and an apply pill */}
-              <aside className="team-hire" aria-label="We're hiring">
-                <span className="team-hire__badge">
-                  <span className="team-hire__pulse" aria-hidden="true" />
-                  {"We’re hiring"}
-                </span>
-                <div className="team-hire__chat">
-                  <div className="team-hire__msg">
-                    <span className="team-hire__orb" aria-hidden="true" />
-                    <div className="team-hire__bubble">
-                      <div className="team-hire__from">Better Pitch · Careers</div>
-                      {"Join us! We’re looking for ambitious people to help make every business call feel human."}
-                    </div>
-                  </div>
-                  <div className="team-hire__typing" aria-hidden="true">
-                    <span />
-                    <span />
-                    <span />
-                  </div>
-                  <div className="team-hire__composer">
-                    <div className="team-hire__chips">
-                      <a className="team-hire__chip" href="#section-footer">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                          <path d="M16 20V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
-                          <rect width="20" height="14" x="2" y="6" rx="2" />
-                        </svg>
-                        Open roles
-                      </a>
-                      <a className="team-hire__chip" href="#section-footer">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                          <path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z" />
-                          <path d="M14 2v5a1 1 0 0 0 1 1h5" />
-                          <path d="M16 13H8" />
-                          <path d="M16 17H8" />
-                        </svg>
-                        Send your CV
-                      </a>
-                      <a className="team-hire__chip" href="#section-footer">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                          <path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z" />
-                        </svg>
-                        Life at Better Pitch
-                      </a>
-                    </div>
-                    <div className="team-hire__input">
-                      <span className="team-hire__plus" aria-hidden="true">+</span>
-                      <span className="team-hire__placeholder">Ask about a role…</span>
-                      <span className="team-hire__wave" aria-hidden="true">
-                        <span />
-                        <span />
-                        <span />
-                        <span />
-                        <span />
-                      </span>
-                    </div>
-                  </div>
-                </div>
-                <a className="team-hire__btn" href="#section-footer">
-                  Apply now
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                    <path d="M5 12h14" />
-                    <path d="m12 5 7 7-7 7" />
-                  </svg>
-                </a>
-              </aside>
+              {/* hiring card: a big careers panel with small interactive cards (TeamHire.jsx) */}
+              <TeamHire />
             </div>
           </div>
           <div className="team-modal" role="dialog" aria-modal="true" aria-label="Team member profile" aria-hidden="true">

@@ -77,14 +77,16 @@ html.bp-loaded .traj__visual { background-image: var(--traj-bg, url("../assets/t
    gradient: js/journey.js sets --gw (word width) and --gx (letter offset).
    Night stops are brighter (they start on black, end on cream); day stops are
    deeper so they hold up on the near-white stage. */
+/* the manifesto's colour run ("Now see what every call is worth.", legacy/toolkit.js
+   buildPalette with css/manifesto.css .tk__cover tokens): pink → magenta → violet,
+   easing into the sentence ink — cream at night, near-black by day */
 .traj__sentence.is-today,
 .traj__sentence.is-dialogue {
-  /* night: the Better Pitch palette — bright orange → coral red → deep pink */
-  --traj-grad: linear-gradient(90deg, #FE6328 0%, #F53521 50%, #E61746 100%);
+  --traj-grad: linear-gradient(90deg, #f73679 0%, #e232db 28%, #8b5cf6 56%, #c0a3ec 78%, #f5e7df 100%);
 }
 html.light .traj__sentence.is-today,
 html.light .traj__sentence.is-dialogue {
-  --traj-grad: linear-gradient(90deg, #e8502f 0%, #d81b60 38%, #b5179e 68%, #6d28d9 100%);
+  --traj-grad: linear-gradient(90deg, #d81b60 0%, #b5179e 28%, #6d28d9 56%, #5b21b6 78%, #4c1d95 100%);   /* ends in deep violet, no black */
 }
 .traj__sentence.is-today .letter,
 .traj__sentence.is-dialogue .letter {
@@ -115,7 +117,7 @@ html.light .traj__sentence.is-dialogue {
 .tk__pin-height { height: 700vh; }
 /* art-direction deck only (tools/brand-content.js drops the front-end deck): the
    art phases keep the scroll length they had inside the full 700vh sequence */
-.tk--art-only .tk__pin-height { height: 1150vh; } /* includes a hold with the fan fully open (js/toolkit.js) */
+.tk--art-only .tk__pin-height { height: 850vh; } /* includes a hold with the fan fully open (js/toolkit.js); was 1150vh — the deck now plays ~35% faster */
 .tk__container {
   position: relative;
   z-index: 1;

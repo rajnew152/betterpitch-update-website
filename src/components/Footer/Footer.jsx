@@ -29,58 +29,32 @@ export default function Footer() {
           </svg>
           <p className="nx__sr-text">Ready when you are, let’s put your calls to work.</p>
           <div className="nx-footer" aria-label="Footer">
-            {/* CTA card revealed by the orb (js/next.js): copy on the left, an interactive */}
-            {/* particle sphere with the "AI" mark at the right (js/footer-cta.js, */}
-            {/* js/particle-sphere.js), same as the hero's voice visual */}
+            {/* CTA card revealed by the orb (js/next.js): copy on the left, a dotted-continent */}
+            {/* globe with arcs linking cities at the right (js/footer-cta.js, particle globe) */}
             <div id="section-footer" className="bp-cta">
               <div className="bp-cta__copy">
+                <p className="bp-cta__eyebrow"><span aria-hidden="true" />Voice AI for every business call</p>
                 <p className="bp-cta__text">
                   <strong>Build with Better Pitch</strong>{" "}
-                  Put natural voice AI agents on every customer call. Better Pitch runs your campaigns, inbound routing and follow-ups in 30+ languages, so your team closes more, faster.
+                  Natural voice AI agents on every call, in 30+ languages.
                 </p>
-                <a className="bp-cta__btn" href="#hero">
-                  Try it now
-                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                    <path d="M5 12h14" />
-                    <path d="m12 5 7 7-7 7" />
-                  </svg>
-                </a>
-                {/* the site's headline numbers, footer links and the legal / social bar */}
+                <div className="bp-cta__actions">
+                  <a className="bp-cta__btn" href="#hero">
+                    Try it now
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <path d="M5 12h14" />
+                      <path d="m12 5 7 7-7 7" />
+                    </svg>
+                  </a>
+                  <a className="bp-cta__btn bp-cta__btn--ghost" href="mailto:srishti@betterpitch.ai">Talk to sales</a>
+                </div>
+                {/* the site's headline numbers and the legal / social bar */}
                 <ul className="bp-cta__stats" aria-label="Better Pitch at a glance">
                   <li><strong>2,000+</strong><span>businesses on Better Pitch</span></li>
                   <li><strong>100+</strong><span>languages &amp; dialects</span></li>
                   <li><strong>&lt;300ms</strong><span>reply latency</span></li>
                   <li><strong>2M+</strong><span>calls every month</span></li>
                 </ul>
-                <nav className="bp-cta__links" aria-label="Footer">
-                  <div>
-                    <p>Product</p>
-                    <ul>
-                      <li><a href="#features">Why Better Pitch</a></li>
-                      <li><a href="#section-cinematic-project">Industries</a></li>
-                      <li><a href="#roi-calculator">ROI Calculator</a></li>
-                      <li><a href="#testimonials">Results</a></li>
-                    </ul>
-                  </div>
-                  <div>
-                    <p>Company</p>
-                    <ul>
-                      <li><a href="#hero">About</a></li>
-                      <li><a href="#section-journey">Team</a></li>
-                      <li><a href="#section-footer">Careers</a></li>
-                      <li><a href="#section-footer">Press</a></li>
-                    </ul>
-                  </div>
-                  <div>
-                    <p>Resources</p>
-                    <ul>
-                      <li><a href="#section-faq">FAQs</a></li>
-                      <li><a href="#section-faq">Blog</a></li>
-                      <li><a href="#roi-calculator">Pricing</a></li>
-                      <li><a href="#section-footer">Privacy Policy</a></li>
-                    </ul>
-                  </div>
-                </nav>
                 <div className="bp-cta__base">
                   <span>© 2026 Better Pitch</span>
                   <span className="bp-cta__trust">SOC 2 · GDPR · HIPAA ready</span>
@@ -102,7 +76,7 @@ export default function Footer() {
               </div>
               <div className="bp-cta__globe" aria-hidden="true">
                 <div className="bp-sphere-grid" />
-                <canvas className="bp-cta__canvas bp-sphere-canvas" />
+                <canvas className="bp-cta__canvas" />
               </div>
             </div>
           </div>

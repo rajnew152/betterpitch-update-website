@@ -163,7 +163,10 @@
       const dotFree = n > 0.06;
       const lift = norm(n, 0.3, 0.6);
       const y = textLift * lift;
-      if (y !== lastLift) { gsap.set(text, { y }); lastLift = y; }
+      /* the sentence fades out as it lifts away: once the dot has dropped into the
+         card nothing of it is left on screen (with the shorter card, the lifted
+         curve used to leave a giant letter hanging over the top of the page) */
+      if (y !== lastLift) { gsap.set(text, { y, opacity: 1 - lift }); lastLift = y; }
       const target = lift > 0 ? { x: view.x + revealCenter.x, y: view.y + revealCenter.y } : endPoint;
       const cx = interpolate(endPoint.x, target.x, lift);
       const cy = interpolate(endPoint.y, target.y, lift);

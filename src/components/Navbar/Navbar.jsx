@@ -32,8 +32,8 @@ export default function Navbar() {
               </span>
             </button>
             {" "}
-            <a href="#section-footer" className="sm-get-in-touch relative inline-flex h-7 sm:h-8 items-center justify-center rounded-full px-3 sm:px-5 text-[10px] sm:text-[12px] font-bold tracking-[0.18em] uppercase">
-              Get in touch
+            <a href="./login.html" className="sm-get-in-touch relative inline-flex h-7 sm:h-8 items-center justify-center rounded-full px-3 sm:px-5 text-[10px] sm:text-[12px] font-bold tracking-[0.18em] uppercase">
+              Login / Sign up
             </a>
             {" "}
             <span className="sm-extra" style={{ color: "#ffffff", pointerEvents: "auto" }}>

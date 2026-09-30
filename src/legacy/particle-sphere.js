@@ -41,7 +41,7 @@
      fills the old orb's frame; the reference sits in a wider hero) */
   const CFG = {
     sphere: { particleCount: 4500, radiusScale: 0.84, dotSize: 6, sizeVariance: 0.55, perspective: 2.6, shellNoise: 0.05, overscan: 0.5, scaleDots: true, referenceSize: 640, seed: 7 },
-    appearance: { coreMix: 0.16, softness: 0.55, brightness: 1, twinkleAmount: 0.18, twinkleSpeed: 0.6 },
+    appearance: { coreMix: 0.3, sparkleTwinkle: 0.65, sparkleSpeed: 1.5, softness: 0.55, brightness: 1, twinkleAmount: 0.18, twinkleSpeed: 0.6 },
     glow: { show: true, size: 1.5, intensity: 0.5 },
     logo: { show: true, text: "AI", size: 0.46, count: 1300, dotScale: 1.15, brightness: 1.4, jitter: 0.012, depth: 0.06, glow: 0.4, clearance: 0.45, formDelay: 1.1, formDuration: 1.7, breathe: 0.03 },
     rotation: { speed: 6, direction: -1 /* leftward */, tilt: -8, wobbleAmount: 2, wobbleSpeed: 0.15 },
@@ -61,9 +61,16 @@
   const THEMES = {
     /* grad: the Better Pitch logo's gradient (assets/betterpitch.svg), left → right;
        the dots are coloured by where they sit across the sphere, like the logo.
-       core: the white-pink sparkle dots (coreMix of them) */
-    night: { core: "#FFE8F2", grad: [[0, "#FF8A3D"], [0.4, "#FF4D6D"], [0.72, "#E83FB8"], [1, "#B44DFF"]], halo: "#FF4D6D", composite: "lighter", haloScale: 0.75, brightness: 1.05 },
-    day: { core: "#6D28D9", grad: [[0, "#E8621F"], [0.4, "#E0284F"], [0.72, "#C01F93"], [1, "#8F2FE0"]], halo: "#F06BA8", composite: "source-over", haloScale: 0.55, brightness: 1.1 },
+       core: the white glints (coreMix of them). sparkle: the mixed-colour star dots,
+       scattered over the whole globe (not banded by position like grad). softness overrides the sprite
+       falloff per theme: lower = crisper, more saturated dots.
+       shell: extra brightness for the globe's dots only (the AI mark has its own).
+       dot: dot size multiplier. Both themes run brighter, more luminous colours
+       with a stronger halo so the globe reads as lit from within */
+    night: { core: "#FFF4FA", grad: [[0, "#FFA04A"], [0.4, "#FF5C7C"], [0.72, "#FF4FD2"], [1, "#C77DFF"]], sparkle: ["#FFFFFF", "#FF7EB6", "#C77DFF", "#FFA04A", "#FFD1E8"], halo: "#FF3D8A", composite: "lighter", haloScale: 1.05, brightness: 1.8, softness: 0.42, shell: 1.9, dot: 1.15 },
+    /* day: deeper shades of the same run (and a lighter halo wash) so the dots read
+       dark and rich on the light pink hero */
+    day: { core: "#A3106A", grad: [[0, "#D45500"], [0.4, "#CC0F3C"], [0.72, "#A80E86"], [1, "#6219C9"]], sparkle: ["#E0245E", "#7C3AED", "#EA580C", "#C026D3"], halo: "#E0245E", composite: "source-over", haloScale: 0.4, brightness: 2.3, softness: 0.16, shell: 2.4, dot: 1.2 },
   };
   const themeName = () => (document.documentElement.classList.contains("light") ? "day" : "night");
   const hexRgb = (h) => ({ r: parseInt(h.slice(1, 3), 16), g: parseInt(h.slice(3, 5), 16), b: parseInt(h.slice(5, 7), 16) });
@@ -78,6 +85,22 @@
     g.addColorStop(0, rgba(c, 1));
     g.addColorStop(0.05 + softness * 0.25, rgba(c, 0.5));
     g.addColorStop(0.35 + softness * 0.3, rgba(c, 0.12));
+    g.addColorStop(1, rgba(c, 0));
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, SPRITE, SPRITE);
+    return cv;
+  }
+
+  /* a sparkle: a bright white heart inside a glow of its colour */
+  function starSprite(c) {
+    const cv = document.createElement("canvas");
+    cv.width = cv.height = SPRITE;
+    const ctx = cv.getContext("2d");
+    const h = SPRITE / 2;
+    const g = ctx.createRadialGradient(h, h, 0, h, h, h);
+    g.addColorStop(0, "rgba(255,255,255,1)");
+    g.addColorStop(0.1, rgba(c, 1));
+    g.addColorStop(0.32, rgba(c, 0.45));
     g.addColorStop(1, rgba(c, 0));
     ctx.fillStyle = g;
     ctx.fillRect(0, 0, SPRITE, SPRITE);
@@ -148,7 +171,7 @@
       const len = Math.sqrt(dx * dx + dy * dy + dz * dz) || 1, m = 0.35 + r() ** 1.5 * 0.65;
       o.sx[i] = (dx / len) * m + driftX; o.sy[i] = (dy / len) * m - driftY; o.sz[i] = (dz / len) * m;
       o.seed[i] = r(); o.alpha[i] = 0.55 + r() * 0.45; o.size[i] = 1 - sizeVariance * 0.5 + r() * sizeVariance;
-      o.sprite[i] = r() < 0.35 ? 0 : 1;
+      o.sprite[i] = r() < 0.25 ? 0 : r() < 0.35 ? 2 : 1;
     }
     return o;
   }
@@ -189,7 +212,7 @@
     const px = sampleMark(C.logo.text);
     const mark = px ? buildMark(px, C.logo.count * (window.innerWidth < 768 ? 0.7 : 1), C.logo.jitter, C.logo.depth, C.scatter.turbulence, C.scatter.driftX, C.scatter.driftY, C.sphere.sizeVariance, C.sphere.seed) : null;
 
-    let theme = null, sprites = [], grads = [];
+    let theme = null, sprites = [], grads = [], stars = [];
     const GRAD_N = 24;
     const gradAt = (stops, t) => {
       let k = 0;
@@ -200,9 +223,11 @@
     };
     const setTheme = () => {
       theme = THEMES[themeName()];
-      sprites = [sprite(hexRgb(theme.core), C.appearance.softness)];
+      const soft = theme.softness ?? C.appearance.softness;
+      sprites = [sprite(hexRgb(theme.core), soft)];
       grads = [];
-      for (let i = 0; i < GRAD_N; i++) grads.push(sprite(gradAt(theme.grad, i / (GRAD_N - 1)), C.appearance.softness));
+      for (let i = 0; i < GRAD_N; i++) grads.push(sprite(gradAt(theme.grad, i / (GRAD_N - 1)), soft));
+      stars = (theme.sparkle || []).map((c) => starSprite(hexRgb(c)));
     };
     setTheme();
 
@@ -285,7 +310,7 @@
       const ln = Math.sqrt(LX * LX + LY * LY + LZ * LZ) || 1; LX /= ln; LY /= ln; LZ /= ln;
       const persp = R * clamp(C.sphere.perspective, 1.1, 12);
       const dotK = C.sphere.scaleDots ? Math.min(cssW, cssH) / ov / Math.max(80, C.sphere.referenceSize) : 1;
-      const dot = Math.max(0.35, C.sphere.dotSize * dpr * dotK);
+      const dot = Math.max(0.35, C.sphere.dotSize * dpr * dotK * (theme.dot ?? 1));
       const bright = clamp(C.appearance.brightness * theme.brightness * (1 + 0.25 * hoverAmt) * (1 + 0.55 * voiceAmt * level), 0, 3);
       /* voice modulation: the surface rolls in bands (latitude + a diagonal wave)
          and swells with the level; faster and deeper the louder it gets */
@@ -293,9 +318,13 @@
       const vT1 = vPh1, vT2 = vPh2;
       const voiceWarp = (x, y, z) => 1 + vSwell + vAmp * (0.6 * Math.sin(y * 7 + vT1) + 0.4 * Math.sin(x * 5 - z * 4 - vT2));
       const tw = clamp(C.appearance.twinkleAmount, 0, 1), twS = C.appearance.twinkleSpeed;
+      const tw2 = clamp(C.appearance.sparkleTwinkle, 0, 1), twS2 = C.appearance.sparkleSpeed;
+      const twinkle = (spr, sd) => (spr === 1 ? (tw > 0 ? 1 - tw + tw * (0.5 + 0.5 * Math.sin(time * twS * TAU + sd * TAU)) : 1)
+        : 1 - tw2 + tw2 * Math.pow(0.5 + 0.5 * Math.sin(time * twS2 * TAU + sd * 53), 2) * 1.35);
       const stg = clamp(C.scatter.stagger, 0, 0.85), stgR = 1 - stg, dist = C.scatter.distance, fade = clamp(C.scatter.fade, 0, 1);
       const rim = C.lighting.rim, dFade = clamp(C.lighting.depthFade, 0, 1), lI = clamp(C.lighting.intensity, 0, 1);
 
+      const shellB = theme.shell ?? 1;
       const hasMark = C.logo.show && !!mark;
       const form = clamp((time - C.logo.formDelay) / Math.max(0.1, C.logo.formDuration), 0, 1);
       const mk = hasMark ? easeOut(form) * (1 - smooth(0, 0.5, scat)) * vis * markAmt : 0;
@@ -342,6 +371,7 @@
       const gdx = Math.cos(gAng), gdy = Math.sin(gAng), gSpan = 1 / (2.1 * R);
       const colorOf = (x, y, sd, spr) => {
         if (spr === 0) return sprites[0];
+        if (spr === 2 && stars.length) return stars[Math.floor(sd * 997) % stars.length];
         const t = clamp(0.5 + ((x - cx) * gdx + (y - cy) * gdy) * gSpan + (sd - 0.5) * 0.08, 0, 1);
         return grads[Math.round(t * (GRAD_N - 1))];
       };
@@ -404,8 +434,8 @@
         const depth = 1 - dFade * (0.5 - hz * 0.5);
         const rimF = 1 + rim * (1 - Math.abs(hz));
         const lit = 1 - lI + lI * Math.max(0, hx * LX + hy * LY + hz * LZ);
-        const twk = tw > 0 ? 1 - tw + tw * (0.5 + 0.5 * Math.sin(time * twS * TAU + sd * TAU)) : 1;
-        let a = s.alpha[e] * bright * depth * rimF * lit * twk * vis;
+        const twk = twinkle(s.sprite[e], sd);
+        let a = s.alpha[e] * bright * shellB * depth * rimF * lit * twk * vis;
         /* on the voice shape every dot is lit evenly, at its curve's strength */
         if (morph > 0) a += (s.alpha[e] * bright * 1.35 * twk * vis * shapeA - a) * morph;
         a *= lensGlow;
@@ -491,7 +521,7 @@
           const ly = hy * cB - lz0 * sB, lz = hy * sB + lz0 * cB;
           let shade = (1 - dFade * (0.5 - lz * 0.5)) * (1 + rim * (1 - Math.abs(lz))) * (1 - lI + lI * Math.max(0, lx * LX + ly * LY + lz * LZ));
           shade += (1 - shade) * mk;
-          const twk = tw > 0 ? 1 - tw + tw * (0.5 + 0.5 * Math.sin(time * twS * TAU + sd * TAU)) : 1;
+          const twk = twinkle(m.sprite[e], sd);
           let a = m.alpha[e] * bright * mBright * shade * twk * vis * (1 - morph) * lensGlow;
           if (fade > 0 && p > 0) a *= 1 - fade * smooth(0.25, 1, p);
           if (a < 0.005) continue;

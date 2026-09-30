@@ -7,6 +7,7 @@ import './styles/journey-fluid.css';
 import './styles/manifesto.css';
 import './styles/marquee-fill.css';
 import './styles/team.css';
+import './styles/team-hire.css';
 import './styles/testimonials.css';
 import './styles/card-flip.css';
 import './styles/brand.css';

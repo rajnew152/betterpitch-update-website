@@ -220,8 +220,11 @@
        "Emotion" → "meets" → "outcomes." — instead of creeping through the long pin;
        further wheel input during the glide (and its trackpad inertia) is absorbed.
        Registered before js/smooth-scroll.js, which then leaves the event alone
-       (defaultPrevented). Past the last step the page scrolls on normally. */
-    if (finePointer && !reduced) {
+       (defaultPrevented). Past the last step the page scrolls on normally.
+       Not gated on (hover: hover) / (pointer: fine): touchscreen laptops report a
+       coarse primary pointer yet scroll with a mouse or touchpad, and fingers never
+       fire wheel events, so the wheel itself is the only check needed. */
+    {
       const GLIDE = 0.95;   // s per step
       const stepY = () => {
         const st = tl.scrollTrigger;

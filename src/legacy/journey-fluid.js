@@ -21,7 +21,8 @@ import trajectoryBgUrl from "../assets/trajectory/background.webp"; /* React bui
     velocityDamping: 0.15,
     strengthRise: 0.15,
     strengthDecay: 0.03,
-    idleSpeed: 1,
+    idleSpeed: 1.55,       /* was 1: the liquid flows 55% faster */
+    idleBoost: 1.55,       /* the liquid warps 55% further (scales every idle strength, scrubbed or not) */
     idleFrequency: [5, 20],
     idleStable: 0.012,
     zoomActive: 1.02,
@@ -374,7 +375,7 @@ void main() {
       const scrubbed = window.LiaJourney && window.LiaJourney.fluid;
       wake += ((active ? 1 : 0) - wake) * Math.min(1, dt / (CFG.wakeSeconds / 4));
       if (!active) wake = 0;
-      const idleStrength = scrubbed ? scrubbed.idle : CFG.idleStable * wake;
+      const idleStrength = (scrubbed ? scrubbed.idle : CFG.idleStable * wake) * CFG.idleBoost;
       const interaction = scrubbed ? scrubbed.interaction : wake;
       const zoom = scrubbed ? scrubbed.zoom : 1 + (CFG.zoomActive - 1) * wake;
 

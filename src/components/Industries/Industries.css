@@ -279,3 +279,99 @@
   background: #ffffff;
   color: var(--ind-c, #e8173f);
 }
+
+/* ------------------------------------------------------------------ tile palette
+   Each industry gets its own distinct colour (the tile gradient above is built
+   from --ind-c), and the icon sits on a white disc drawn in that colour.
+   :has(> svg.lucide-…) outranks the brand-range :has(.lucide-…) colours above. */
+#section-cinematic-project [data-cinematic-wheel-detail] > div:first-child:has(> svg.lucide-graduation-cap) { --ind-c: #7c3aed; }  /* edtech: violet */
+#section-cinematic-project [data-cinematic-wheel-detail] > div:first-child:has(> svg.lucide-house)          { --ind-c: #f97316; }  /* real estate: orange */
+#section-cinematic-project [data-cinematic-wheel-detail] > div:first-child:has(> svg.lucide-building2)      { --ind-c: #0ea5e9; }  /* hospitality: sky */
+#section-cinematic-project [data-cinematic-wheel-detail] > div:first-child:has(> svg.lucide-shopping-bag)   { --ind-c: #db2777; }  /* D2C: pink */
+#section-cinematic-project [data-cinematic-wheel-detail] > div:first-child:has(> svg.lucide-globe)          { --ind-c: #4f46e5; }  /* contact centres: indigo */
+#section-cinematic-project [data-cinematic-wheel-detail] > div:first-child:has(> svg.lucide-ship)           { --ind-c: #d97706; }  /* logistics: amber */
+#section-cinematic-project [data-cinematic-wheel-detail] > div:first-child:has(> svg.lucide-plane)          { --ind-c: #06b6d4; }  /* travel: cyan */
+#section-cinematic-project [data-cinematic-wheel-detail] > div:first-child:has(> svg.lucide-landmark)       { --ind-c: #2563eb; }  /* BFSI: blue */
+#section-cinematic-project [data-cinematic-wheel-detail] > div:first-child:has(> svg.lucide-activity)       { --ind-c: #10b981; }  /* healthcare: emerald */
+#section-cinematic-project [data-cinematic-wheel-detail] > div:first-child:has(> svg.lucide-sparkles)       { --ind-c: #c026d3; }  /* your industry: fuchsia */
+#section-cinematic-project [data-cinematic-wheel-detail] > div:first-child > svg {
+  box-sizing: content-box;
+  padding: 9px;
+  border-radius: 50%;
+  background: #ffffff;
+  color: var(--ind-c);
+  filter: drop-shadow(0 4px 10px rgba(46, 12, 110, 0.35));
+}
+@media (min-width: 1536px) {
+  #section-cinematic-project [data-cinematic-wheel-detail] > div:first-child > svg { padding: 10px; }
+}
+
+/* ------------------------------------------------------------------ copy
+   The title, divider and description (wrapped in .bp-ind-copy by legacy/wheel.js)
+   sit straight on the segment as plain centred text: white title, a short white
+   rule, white copy. No card (its backdrop blur on ten rotating labels was also a
+   big part of the scroll jank). */
+#section-cinematic-project .bp-ind-copy {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  text-align: center;
+}
+#section-cinematic-project .bp-ind-copy h3 { color: #ffffff; }
+#section-cinematic-project .bp-ind-copy > span {
+  display: block;
+  background: rgba(255, 255, 255, 0.9);
+}
+#section-cinematic-project .bp-ind-copy p {
+  color: rgba(255, 255, 255, 0.92);
+  font-weight: 500;
+  line-height: 1.45;
+}
+
+/* ------------------------------------------------------------------ label rhythm
+   More air between the parts of each label (they were packed tight): a bigger gap
+   under the icon tile, room around the divider, and looser description lines, so
+   each segment reads fuller. Scales up with the breakpoints above. */
+#section-cinematic-project [data-cinematic-wheel-detail] > div:first-child { margin-bottom: 18px; }
+#section-cinematic-project .bp-ind-copy { padding: 4px 0; }
+#section-cinematic-project .bp-ind-copy h3 { line-height: 1.2; }
+#section-cinematic-project .bp-ind-copy > span { margin: 12px 0 14px; }
+#section-cinematic-project .bp-ind-copy p { margin-top: 0; line-height: 1.7; }
+@media (min-width: 1024px) {
+  #section-cinematic-project [data-cinematic-wheel-detail] > div:first-child { margin-bottom: 22px; }
+  #section-cinematic-project .bp-ind-copy > span { margin: 14px 0 16px; }
+}
+@media (min-width: 1536px) {
+  #section-cinematic-project [data-cinematic-wheel-detail] > div:first-child { margin-bottom: 26px; }
+  #section-cinematic-project .bp-ind-copy > span { margin: 16px 0 18px; }
+  #section-cinematic-project .bp-ind-copy p { line-height: 1.75; }
+}
+
+/* ------------------------------------------------------------------ night backdrop
+   The stage behind the wheel in the site's own night palette instead of the old
+   violet wash: a deep plum ground under warm brand glows (orange left, hot pink
+   centre, magenta right, echoing the segments' gradient), settling to black at
+   the bottom so the journey stage below still joins without a seam. The day
+   theme has its own rosy wash (css/palette.css). */
+html:not(.light) #section-cinematic-project,
+html:not(.light) #section-cinematic-project > div:not(.bp-seam) { background-color: #12060c; }
+html:not(.light) #section-cinematic-project > div > .pointer-events-none.absolute.inset-0:first-child {
+  background:
+    radial-gradient(ellipse 55% 45% at 50% 18%, rgba(247, 54, 121, 0.34), transparent 70%),
+    radial-gradient(ellipse 40% 40% at 16% 34%, rgba(255, 106, 61, 0.26), transparent 70%),
+    radial-gradient(ellipse 40% 40% at 84% 34%, rgba(226, 50, 219, 0.26), transparent 70%),
+    linear-gradient(180deg, #2a0b18 0%, #1c0812 30%, #0d0409 60%, #000000 100%);
+}
+/* the soft glow under the wheel: brand pink instead of violet */
+html:not(.light) #section-cinematic-project .bg-violet-700\/18 { background-color: rgba(247, 54, 121, 0.2); }
+/* the lower corners beside the wheel are where the backdrop actually shows: the old
+   black fade there becomes the brand glows (orange left, magenta right) over plum,
+   still ending in black on the bottom edge for the journey below */
+html:not(.light) #section-cinematic-project > div > .bg-gradient-to-t.from-black {
+  background:
+    radial-gradient(ellipse 34% 60% at 0% 62%, rgba(255, 106, 61, 0.42), transparent 70%),
+    radial-gradient(ellipse 34% 60% at 100% 62%, rgba(226, 50, 219, 0.42), transparent 70%),
+    radial-gradient(ellipse 50% 40% at 50% 100%, rgba(247, 54, 121, 0.18), transparent 70%),
+    linear-gradient(0deg, #000000 0%, rgba(18, 6, 12, 0.92) 22%, rgba(18, 6, 12, 0.6) 60%, transparent 100%);
+}

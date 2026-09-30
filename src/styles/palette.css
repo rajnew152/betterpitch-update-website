@@ -149,9 +149,13 @@ html:not(.light) #section-toolkit .tk__container {
 
 /* Toolkit cover (the transition card's fill that grows over the stage before the
    ROI calculator fades in): the ROI stage's own light background, not the cream */
-:root { --tk-cover: #fdf9fb; }
-/* night theme: the cover is the manifesto's dark top (--mf-above) instead of white */
-html:not(.light) { --tk-cover: #000000; }
+/* day: a soft pink (the manifesto stage under its glows) rather than near-white,
+   so the colour rising in the card already matches the stage it opens into */
+:root { --tk-cover: #fbe6ee; }
+/* night theme: a deep plum-grey lifted to the deck stage (#151519 under its pink /
+   violet glows) instead of pure black, which read as a hole in the stage. Keep it
+   equal to .tk__cover --mf-mid (css/manifesto.css): the window grows out of the card */
+html:not(.light) { --tk-cover: #1b181e; }
 
 /* header contrast (js/theme.js sets bp-hdr-on-dark / bp-hdr-on-light from the
    section behind the header): readable Menu / Get in touch / theme controls */
@@ -173,7 +177,9 @@ html.bp-hdr-on-light #staggered-menu .sm-get-in-touch { color: #0a0a0f !importan
    letters, which read through the gradient cards). !important beats the inline
    colours js/journey.js sets on the stage while it plays. */
 html.light .traj__container { background-color: #fdf9fb !important; }
-html.light .traj__sentence:not(.is-both) { color: #1f1d1d; }
+/* deep violet, not near-black: the letters show this ink for a moment while they
+   rise in (before the gradient paints), which read as black blocks */
+html.light .traj__sentence:not(.is-both) { color: #4c1d95 !important; }
 
 /* journey stage (night theme): stays on the dark ground instead of js/journey.js's
    cream crossfade, and the sentences keep cream letters to read on it */

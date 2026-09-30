@@ -7,6 +7,8 @@
 /* the canvas bleeds half its size on every side (the reference's "overscan"),
    so dispersing dots are never clipped at the frame */
 .bp-sphere-canvas {
+  /* extra lift on top of the brighter theme colours (legacy/particle-sphere.js) */
+  filter: saturate(1.25) brightness(1.12);
   position: absolute;
   top: -50%;
   left: -50%;
@@ -122,3 +124,4 @@ html.light .bp-sphere-controls > .gap-1\.5 > span:nth-child(4) { --bar-a: #d62a9
 html.light .bp-sphere-controls > .gap-1\.5 > span:nth-child(5) { --bar-a: #b52fc4; --bar-b: #9420b8; }
 html.light .bp-sphere-controls > .gap-1\.5 > span:nth-child(6) { --bar-a: #9a3ce0; --bar-b: #7c2fd6; }
 html.light .bp-sphere-controls > .gap-1\.5 > span:nth-child(7) { --bar-a: #7f45e8; --bar-b: #6d28d9; }
+html.light .bp-sphere-canvas { filter: saturate(1.3) brightness(0.9) contrast(1.15); }

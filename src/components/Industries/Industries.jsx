@@ -49,23 +49,39 @@ export default function Industries() {
                   <stop offset="36%" stopColor="#f4301f" stopOpacity="1" />
                   <stop offset="66%" stopColor="#e8173f" stopOpacity="1" />
                   <stop offset="100%" stopColor="#cf159f" stopOpacity="1" />
+                  {/* live gradient: the colour flow slowly swings across each segment */}
+                  <animate attributeName="x1" values="31%;8%;46%;31%" dur="16s" repeatCount="indefinite" calcMode="spline" keySplines="0.45 0 0.55 1;0.45 0 0.55 1;0.45 0 0.55 1" />
+                  <animate attributeName="x2" values="69%;92%;54%;69%" dur="16s" repeatCount="indefinite" calcMode="spline" keySplines="0.45 0 0.55 1;0.45 0 0.55 1;0.45 0 0.55 1" />
+                  <animate attributeName="y1" values="3%;18%;0%;3%" dur="16s" repeatCount="indefinite" calcMode="spline" keySplines="0.45 0 0.55 1;0.45 0 0.55 1;0.45 0 0.55 1" />
                 </linearGradient>
                 {/* radial-gradient(80% 62% at 0% 100%, rgba(214, 22, 214, 0.9), transparent 62%) */}
                 <radialGradient id="cinematicColorBleed" cx="0%" cy="100%" r="80%">
                   <stop offset="0%" stopColor="#d616d6" stopOpacity="0.9" />
                   <stop offset="62%" stopColor="#d616d6" stopOpacity="0" />
                   <stop offset="100%" stopColor="#d616d6" stopOpacity="0" />
+                  {/* the magenta bleed drifts around the lower corner and breathes */}
+                  <animate attributeName="cx" values="0%;38%;12%;0%" dur="11s" repeatCount="indefinite" calcMode="spline" keySplines="0.45 0 0.55 1;0.45 0 0.55 1;0.45 0 0.55 1" />
+                  <animate attributeName="cy" values="100%;72%;86%;100%" dur="11s" repeatCount="indefinite" calcMode="spline" keySplines="0.45 0 0.55 1;0.45 0 0.55 1;0.45 0 0.55 1" />
+                  <animate attributeName="r" values="80%;95%;70%;80%" dur="9s" repeatCount="indefinite" calcMode="spline" keySplines="0.45 0 0.55 1;0.45 0 0.55 1;0.45 0 0.55 1" />
                 </radialGradient>
                 {/* radial-gradient(70% 50% at 88% 4%, rgba(255, 150, 200, 0.55), transparent 60%) */}
                 <radialGradient id="cinematicSpecular" cx="88%" cy="4%" r="70%">
-                  <stop offset="0%" stopColor="#ff96c8" stopOpacity="0.55" />
+                  <stop offset="0%" stopColor="#ff96c8" stopOpacity="0.55">
+                    <animate attributeName="stop-opacity" values="0.55;0.85;0.4;0.55" dur="7s" repeatCount="indefinite" />
+                  </stop>
                   <stop offset="60%" stopColor="#ff96c8" stopOpacity="0" />
                   <stop offset="100%" stopColor="#ff96c8" stopOpacity="0" />
+                  {/* the pink highlight glides across the top of the segment */}
+                  <animate attributeName="cx" values="88%;52%;70%;88%" dur="13s" repeatCount="indefinite" calcMode="spline" keySplines="0.45 0 0.55 1;0.45 0 0.55 1;0.45 0 0.55 1" />
+                  <animate attributeName="cy" values="4%;30%;12%;4%" dur="13s" repeatCount="indefinite" calcMode="spline" keySplines="0.45 0 0.55 1;0.45 0 0.55 1;0.45 0 0.55 1" />
                 </radialGradient>
                 <linearGradient id="cinematicRimGlow" x1="0%" y1="0%" x2="100%" y2="100%">
                   <stop offset="0%" stopColor="#ffffff" stopOpacity="0.28" />
                   <stop offset="38%" stopColor="#e23632" stopOpacity="0.38" />
                   <stop offset="100%" stopColor="#bc1863" stopOpacity="0.18" />
+                  {/* a light travels along the segment rims */}
+                  <animate attributeName="x1" values="-60%;100%" dur="6s" repeatCount="indefinite" />
+                  <animate attributeName="x2" values="40%;200%" dur="6s" repeatCount="indefinite" />
                 </linearGradient>
               </defs>
               <g className="cps-wheel-glass">

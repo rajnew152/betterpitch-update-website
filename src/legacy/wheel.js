@@ -1,13 +1,19 @@
 /* =============================================================================
    wheel.js — "Built for every industry" cinematic wheel. Pinned section whose
-   ten glass segments rotate a full turn with scroll (GSAP ScrollTrigger,
-   scrub .9) while each label counter-rotates; Prev/Next nudge the wheel by
-   36° (power3.out, .95s). Also ports the site's wheel-smoothing handler that
-   slows mouse-wheel scrolling while the section is pinned.
+   ten glass segments show four industries at a time: each scroll step (and
+   Prev/Next) turns the wheel four segments in one eased move while each label
+   counter-rotates. Also ports the site's wheel-smoothing handler that slows
+   mouse-wheel scrolling while the section is pinned.
    ============================================================================= */
 (function () {
   "use strict";
-  const WHEEL_SLOWDOWN = 2;   // scroll length multiplier: 2 = the wheel turns 50% slower
+  /* four industries at a time: the ten segments are 36° apart, so the wheel rests
+     half a segment round (4 labels sit evenly in view, the 5th is out of it) and
+     each scroll step turns it by four segments to bring in the next four */
+  const SEG = 36, PER_PAGE = 4, STEP = SEG * PER_PAGE, OFFSET = -SEG / 2;
+  const PAGES = 3;              // 12 slots for 10 industries: the last page repeats two
+  const PAGE_SCROLL = 0.9;      // viewport heights of scroll per page while pinned
+  const TURN = { duration: 1.25, ease: "power3.inOut" };
 
   function init() {
     const section = document.getElementById("section-cinematic-project");
@@ -29,22 +35,53 @@
       tile.insertAdjacentHTML("afterbegin",
         '<span class="bp-ind-ping" aria-hidden="true"></span><span class="bp-ind-ping bp-ind-ping--late" aria-hidden="true"></span><span class="bp-ind-orbit" aria-hidden="true"></span>');
       tile.insertAdjacentHTML("beforeend", `<span class="bp-ind-call" aria-hidden="true">${PHONE}</span>`);
+      /* the title, divider and description go into one card (.bp-ind-copy), styled
+         like a frosted chat bubble */
+      const h3 = d.querySelector(":scope > h3");
+      if (h3 && !d.querySelector(".bp-ind-copy")) {
+        const copy = document.createElement("div");
+        copy.className = "bp-ind-copy";
+        h3.before(copy);
+        while (copy.nextElementSibling) copy.append(copy.nextElementSibling);
+      }
     });
 
     /* the tile loops cost a style pass every frame (this page's stylesheet is large),
-       which is what made scrolling the wheel stutter. They pause while the page is
-       scrolling through the section (the wheel turn stays smooth) and resume ~0.2s
-       after it settles; tiles off-screen stay paused. */
-    let scrollIdle = 0, inView = false;
-    const onWheelScroll = () => {
-      if (!inView) return;
-      if (!section.classList.contains("bp-ind-scrolling")) section.classList.add("bp-ind-scrolling");
-      clearTimeout(scrollIdle);
-      scrollIdle = setTimeout(() => section.classList.remove("bp-ind-scrolling"), 200);
+       which made turning the wheel stutter. They pause only while the wheel is
+       actually turning (a page turn or Prev / Next, see turning() below) and resume
+       the moment it lands; tiles off-screen stay paused. They used to pause on every
+       scroll event and wait for the page to settle, and the wheel's scroll glide
+       keeps the page moving long after a turn, so the incoming labels (the outer
+       pair most of all) sat frozen well after they had arrived. */
+    let inView = false;
+    /* the segment gradients drift (SMIL <animate> in the wheel's <defs>) and follow the
+       same rule: paused while scrolling or off-screen, and never with reduced motion */
+    const wheelSvg = wheel.querySelector("svg");
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const syncGradients = () => {
+      if (!wheelSvg || !wheelSvg.pauseAnimations) return;
+      if (reduceMotion || !inView || gradHold || section.classList.contains("bp-ind-scrolling")) wheelSvg.pauseAnimations();
+      else wheelSvg.unpauseAnimations();
     };
-    window.addEventListener("scroll", onWheelScroll, { passive: true });
+    if (reduceMotion && wheelSvg && wheelSvg.setCurrentTime) { wheelSvg.pauseAnimations(); wheelSvg.setCurrentTime(0); }
+    const turning = (on) => {
+      if (section.classList.contains("bp-ind-scrolling") === on) return;
+      section.classList.toggle("bp-ind-scrolling", on);
+      syncGradients();
+    };
+    const TURN_HOOKS = { onStart: () => turning(true), onComplete: () => turning(false) };
+    /* the gradient drift repaints the whole wheel every frame, so it (only it) also
+       rests while the page is scrolling and picks up ~0.2s after — it is a slow
+       drift, so a pause never reads as a late start */
+    let gradHold = false, gradIdle = 0;
+    window.addEventListener("scroll", () => {
+      if (!inView) return;
+      if (!gradHold) { gradHold = true; syncGradients(); }
+      clearTimeout(gradIdle);
+      gradIdle = setTimeout(() => { gradHold = false; syncGradients(); }, 200);
+    }, { passive: true });
     if ("IntersectionObserver" in window) {
-      new IntersectionObserver(([e]) => { inView = e.isIntersecting; }).observe(section);
+      new IntersectionObserver(([e]) => { inView = e.isIntersecting; syncGradients(); }).observe(section);
       const tileIO = new IntersectionObserver((entries) => {
         entries.forEach((e) => e.target.classList.toggle("bp-ind-off", !e.isIntersecting));
       });
@@ -71,42 +108,67 @@
        inherited custom properties (--scroll-rotation, --manual-rotation, …), and
        every change re-styled the wheel's whole subtree (60 SVG paths + 10 labels):
        ~12ms of style recalc per frame, which halved the frame rate while scrubbing */
-    const rot = { scroll: 0, manual: 0 };
+    const rot = { scroll: OFFSET, manual: 0 };
+
+    /* only the four labels in view show: each fades out as it turns past the outer
+       pair (±54° from the bottom) and in again as it comes round */
+    const detailAngles = details.map((d) => {
+      const pos = d.parentElement.style;
+      const dx = (parseFloat(pos.left) - 50) / 100 * wheel.offsetWidth;
+      const dy = (parseFloat(pos.top) + 26) / 100 * wheel.offsetHeight;
+      return Math.atan2(dx, dy) * 180 / Math.PI;
+    });
+    function fadeDetails(deg) {
+      details.forEach((d, k) => {
+        const a = Math.abs(((detailAngles[k] - deg) % 360 + 540) % 360 - 180);
+        const o = Math.min(1, Math.max(0, (76 - a) / 14));
+        const v = o.toFixed(2);
+        if (d.style.opacity !== v) {
+          d.style.opacity = v;
+          d.style.visibility = o > 0 ? "" : "hidden";
+        }
+      });
+    }
+
     function applyRotation() {
       const deg = rot.manual + rot.scroll;
       wheel.style.transform = `rotate(${deg}deg)`;
       const counter = `rotate(${-deg}deg)`;
       for (const d of details) d.style.transform = counter;
+      fadeDetails(deg);
     }
     applyRotation();
 
+    /* Prev / Next turn a whole page of four too */
     let manual = 0;
     function nudge(dir) {
-      manual += -(36 * dir);
-      gsap.to(rot, { manual, duration: 0.95, ease: "power3.out", overwrite: "auto", onUpdate: applyRotation });
+      manual += -(STEP * dir);
+      gsap.to(rot, { manual, ...TURN, ...TURN_HOOKS, overwrite: "auto", onUpdate: applyRotation });
     }
     if (buttons[0]) buttons[0].addEventListener("click", () => nudge(1));
     if (buttons[1]) buttons[1].addEventListener("click", () => nudge(-1));
 
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
-    let trigger = null;
+    /* the pin is split into PAGES equal stretches; entering a stretch turns the wheel
+       to that page in one eased move (not scrubbed), so each scroll step brings in
+       the next four. Scrolling back turns it back the same way */
+    let trigger = null, page = 0;
+    const turnTo = (p) => {
+      if (p === page) return;
+      page = p;
+      gsap.to(rot, { scroll: OFFSET - STEP * p, ...TURN, ...TURN_HOOKS, overwrite: "auto", onUpdate: applyRotation });
+    };
     gsap.context(() => {
-      trigger = gsap.timeline({
-        defaults: { ease: "none" },
-        scrollTrigger: {
-          trigger: section,
-          start: "top top",
-          /* WHEEL_SLOWDOWN × the original pin length: the wheel turns half as far per scroll */
-          end: () => `+=${WHEEL_SLOWDOWN * (window.innerWidth < 768 ? Math.max(1.8 * window.innerHeight, 1100) : window.innerWidth < 1024 ? Math.max(2.2 * window.innerHeight, 1500) : Math.max(2.65 * window.innerHeight, 1900))}`,
-          scrub: 0.9,
-          pin: true,
-          anticipatePin: 1,
-          invalidateOnRefresh: true,
-        },
-      })
-        .to(rot, { scroll: -360, duration: 1, onUpdate: applyRotation }, 0)
-        .scrollTrigger ?? null;
+      trigger = ScrollTrigger.create({
+        trigger: section,
+        start: "top top",
+        end: () => `+=${Math.round(PAGES * PAGE_SCROLL * window.innerHeight)}`,
+        pin: true,
+        anticipatePin: 1,
+        invalidateOnRefresh: true,
+        onUpdate: (self) => turnTo(Math.min(PAGES - 1, Math.floor(self.progress * PAGES))),
+      });
     }, section);
     requestAnimationFrame(() => ScrollTrigger.refresh());
 
@@ -126,11 +188,11 @@
       return deckST ? deckST.end : 0;
     };
     const range = () => (trigger && trigger.end > trigger.start ? { start: trigger.start, end: Math.max(trigger.end, deckEnd()) } : null);
-    const NOTCH = 0.8;    // share of each wheel notch travelled inside the run (a little slower than native)
-    const SPEED = 1.4;    // top glide speed inside the run, in viewport heights per second
+    const NOTCH = 0.9;    // share of each wheel notch travelled inside the run (a little slower than native)
+    const SPEED = 2;    // top glide speed inside the run, in viewport heights per second
     const FOLLOW = 9;     // 1/s — how quickly the page closes the gap to the target
     const RESPONSE = 9;   // 1/s — how quickly the scroll speed adapts
-    const LEAD = 0.3;     // the target never runs more than this many viewports ahead of the page:
+    const LEAD = 0.5;     // the target never runs more than this many viewports ahead of the page:
                           // notches no longer pile up, so the page stops soon after the wheel does
     const APPROACH = 5;   // 1/s — extra speed allowed per px still to go before the pinned range
     let desired = window.scrollY, lastSet = null, raf = null, lastT = 0, vel = 0;

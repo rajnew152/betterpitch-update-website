@@ -70,36 +70,60 @@ html.bp-loaded.light .footer-globe-texture { background-image: url('../../assets
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: clamp(18px, 4cqh, 28px);
-  max-width: min(34rem, 46cqw);
+  gap: clamp(16px, 3.4cqh, 30px);
+  max-width: min(44rem, 48cqw);
   padding: var(--cta-gap) 0 0 clamp(24px, 3.2cqw, 56px);
+}
+/* a small label over the headline */
+.bp-cta__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 calc(clamp(16px, 3.4cqh, 30px) * -0.45);
+  color: var(--cta-strong);
+  font-size: clamp(11px, 0.75vw, 13px);
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  opacity: 0.8;
+}
+.bp-cta__eyebrow span {
+  width: 28px;
+  height: 2px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #ff6a3d, #f73679 50%, #8b5cf6);
 }
 .bp-cta__text {
   margin: 0;
   color: var(--cta-text);
-  font-size: clamp(18px, 1.55vw, 26px);
+  font-size: clamp(22px, 2.05vw, 38px);
   font-weight: 500;
-  line-height: 1.32;
+  line-height: 1.22;
   letter-spacing: -0.01em;
 }
 .bp-cta__text strong { color: var(--cta-strong); font-weight: 500; }
 .bp-cta__btn {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 8px 16px;
+  gap: 8px;
+  padding: 11px 22px;
+  border: 1px solid transparent;
   border-radius: 999px;
   background: var(--cta-btn-bg);
   color: var(--cta-btn-fg);
-  font-size: 13px;
+  font-size: clamp(13px, 0.85vw, 15px);
   font-weight: 600;
   text-decoration: none;
   transition: transform 0.2s ease, opacity 0.2s ease;
 }
 .bp-cta__btn:hover { transform: translateY(-1px); opacity: 0.9; }
-.bp-cta__btn svg { width: 14px; height: 14px; }
+.bp-cta__btn svg { width: 16px; height: 16px; }
+.bp-cta__actions { display: flex; flex-wrap: wrap; gap: 12px; }
+.bp-cta__btn--ghost { background: transparent; color: var(--cta-strong); border-color: var(--cta-line-strong); }
+.nx-footer > #section-footer.bp-cta { --cta-line-strong: rgba(255, 255, 255, 0.28); }
+.light .nx-footer > #section-footer.bp-cta { --cta-line-strong: rgba(31, 29, 29, 0.25); }
 
-/* ---- the rest of the left column: headline numbers, footer links, legal bar.
+/* ---- the rest of the left column: headline numbers and the legal bar.
    The column runs the card's full height so the bar sits on its bottom edge. */
 .bp-cta__copy { align-self: stretch; }
 .nx-footer > #section-footer.bp-cta { --cta-line: rgba(255, 255, 255, 0.1); --cta-link: #c9c5ce; }
@@ -110,14 +134,14 @@ html.bp-loaded.light .footer-globe-texture { background-image: url('../../assets
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: clamp(12px, 1.4cqw, 24px);
   width: 100%;
-  margin: clamp(6px, 2cqh, 22px) 0 0;
+  margin: 0;
   padding: clamp(14px, 2.6cqh, 24px) 0 0;
   border-top: 1px solid var(--cta-line);
   list-style: none;
 }
 .bp-cta__stats li { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
 .bp-cta__stats strong {
-  font-size: clamp(20px, 1.55vw, 27px);
+  font-size: clamp(22px, 1.85vw, 35px);   /* "<300ms" still fits its column */
   font-weight: 600;
   line-height: 1.05;
   white-space: nowrap;
@@ -128,33 +152,15 @@ html.bp-loaded.light .footer-globe-texture { background-image: url('../../assets
   -webkit-text-fill-color: transparent;
 }
 .light .bp-cta__stats strong { background-image: linear-gradient(90deg, #e8502f, #d81b60 45%, #b5179e 75%, #6d28d9); }
-.bp-cta__stats span { color: var(--cta-text); font-size: 12.5px; line-height: 1.35; }
+.bp-cta__stats span { color: var(--cta-text); font-size: clamp(12.5px, 0.8vw, 14.5px); line-height: 1.35; }
 
-.bp-cta__links {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: clamp(12px, 1.4cqw, 24px);
-  width: 100%;
-}
-.bp-cta__links p {
-  margin: 0 0 10px;
-  color: var(--cta-strong);
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-}
-.bp-cta__links ul { display: grid; gap: 7px; margin: 0; padding: 0; list-style: none; }
-.bp-cta__links a,
 .bp-cta__social a {
   color: var(--cta-link);
   font-size: 14px;
   text-decoration: none;
   transition: color 0.2s ease;
 }
-.bp-cta__links a:hover,
 .bp-cta__social a:hover { color: #f73679; }
-.light .bp-cta__links a:hover,
 .light .bp-cta__social a:hover { color: #d81b60; }
 
 .bp-cta__base {
@@ -167,28 +173,26 @@ html.bp-loaded.light .footer-globe-texture { background-image: url('../../assets
   padding: 14px 0 var(--cta-gap);
   border-top: 1px solid var(--cta-line);
   color: var(--cta-text);
-  font-size: 12.5px;
+  font-size: clamp(12.5px, 0.78vw, 14px);
 }
 .bp-cta__trust { opacity: 0.85; }
-.bp-cta__social { display: inline-flex; gap: 14px; margin-left: auto; }
-.bp-cta__social svg { display: block; width: 16px; height: 16px; }
+.bp-cta__social { display: inline-flex; gap: 16px; margin-left: auto; }
+.bp-cta__social svg { display: block; width: 18px; height: 18px; }
 
 /* in: the bands fade up in turn once the card is revealed (.is-in, js/footer-cta.js) */
-.bp-cta__stats, .bp-cta__links, .bp-cta__base {
+.bp-cta__stats, .bp-cta__base {
   opacity: 0;
   transform: translateY(14px);
   transition: opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1), transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
 }
 .bp-cta.is-in .bp-cta__stats { opacity: 1; transform: none; transition-delay: 0.1s; }
-.bp-cta.is-in .bp-cta__links { opacity: 1; transform: none; transition-delay: 0.22s; }
-.bp-cta.is-in .bp-cta__base { opacity: 1; transform: none; transition-delay: 0.34s; }
+.bp-cta.is-in .bp-cta__base { opacity: 1; transform: none; transition-delay: 0.22s; }
 @media (prefers-reduced-motion: reduce) {
-  .bp-cta__stats, .bp-cta__links, .bp-cta__base { opacity: 1; transform: none; transition: none; }
+  .bp-cta__stats, .bp-cta__base { opacity: 1; transform: none; transition: none; }
 }
 
-/* short cards: drop the links, then the numbers, so nothing is clipped */
-@container (max-height: 640px) { .bp-cta__links { display: none; } }
-@container (max-height: 470px) { .bp-cta__stats { display: none; } }
+/* short cards: drop the numbers, so nothing is clipped */
+@container (max-height: 360px) { .bp-cta__stats { display: none; } }
 @container (max-width: 1000px) {
   .bp-cta__stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
@@ -204,8 +208,11 @@ html.bp-loaded.light .footer-globe-texture { background-image: url('../../assets
    wide (--sphere-d) plus its outer dots, never under half the viewport, never
    over 86% of it (the
    "Ready when you are…" line keeps its room; js/next.js measures the card) */
+/* a compact card: just enough for the copy column (text, button, numbers, legal
+   bar), with the globe cut in half by its bottom edge */
 div.nx-footer {
-  height: max(calc(50vh - var(--nx-inset)), min(calc(46vw + 28px), calc(86vh - var(--nx-inset))));
+  /* just tall enough for the copy column (label, headline, buttons, numbers, legal bar) */
+  height: clamp(calc(40vh - var(--nx-inset)), calc(18vw + 150px), calc(80vh - var(--nx-inset)));
 }
 .bp-cta__globe {
   /* the visible sphere is --sphere-d wide: 40% of the screen width. The holder is
@@ -214,27 +221,46 @@ div.nx-footer {
   /* capped by the card height (78% of it, container units) so the whole sphere and
      its outer dots stay inside the card on wide, short screens (it was cut at the
      top and right when 40vw was taller than the card) */
-  --sphere-d: min(40vw, 78cqh);
+  /* half globe: the sphere's centre sits just above the card's bottom edge, so only
+     its upper half shows (and only that half is revealed as the card opens) */
+  --sphere-d: min(54vw, 190cqh);
   --globe: calc(var(--sphere-d) / 0.84);
   position: absolute;
-  top: 50%;
-  right: calc(4.5vw - var(--globe) * 0.08);
+  top: auto;
+  bottom: 0;
+  /* shifted right (was 4.5vw): the sphere's edge meets the card's right edge and
+     its outer dots trail off it */
+  right: calc(-1.5vw - var(--globe) * 0.08);
   width: var(--globe);
   aspect-ratio: 1;
-  transform: translateY(-50%);
+  transform: translateY(46%);
 }
 .bp-cta__globe > .bp-sphere-grid { inset: -8%; }
+/* hover / click the globe (js/footer-cta.js); the card itself only takes the pointer once revealed */
+.bp-cta__globe { cursor: pointer; user-select: none; -webkit-user-select: none; }
+/* laptops: a little smaller, so it never reaches the copy column */
+@media (max-width: 1440px) {
+  .bp-cta__globe { --sphere-d: min(50vw, 190cqh); }
+}
 /* narrower desktops: a little smaller, so it never reaches the copy */
 @media (max-width: 1100px) {
-  .bp-cta__globe { --sphere-d: min(34vw, 78cqh); }
+  .bp-cta__globe { --sphere-d: min(46vw, 190cqh); }
+}
+/* the cobe globe (js/footer-cta.js) fills its holder and fades in once drawn */
+/* the particle globe (js/footer-cta.js) fades out above the sphere's top, which
+   sits on the card's top edge (10% down the canvas), so no dots are sliced there */
+.bp-cta__particles {
+  -webkit-mask-image: linear-gradient(180deg, transparent 9%, #000 17%);
+          mask-image: linear-gradient(180deg, transparent 9%, #000 17%);
 }
 .bp-cta__canvas {
   position: absolute;
-  top: -50%;
-  left: -50%;
+  inset: 0;
   display: block;
-  width: 200%;
-  height: 200%;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  transition: opacity 1.2s ease;
   pointer-events: none;
 }
 /* phones / narrow tablets: copy on top, the globe rising from the bottom centre */
@@ -248,5 +274,5 @@ div.nx-footer {
 }
 /* phones: the sphere sits under the copy, so the extra bands stay out of its way */
 @media (max-width: 640px) {
-  .bp-cta__stats, .bp-cta__links, .bp-cta__base { display: none; }
+  .bp-cta__stats, .bp-cta__base { display: none; }
 }

@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Log in or sign up – Better Pitch</title>
+<meta name="description" content="Log in or create your Better Pitch account."/>
+<link rel="icon" href="./src/assets/betterpitch.ico" sizes="256x256" type="image/x-icon"/>
+<link rel="icon" href="./src/assets/betterpitch-icon.svg" type="image/svg+xml"/>
+<script>
+/* same theme bootstrap as index.html: class on <html>, key "theme", default dark */
+(function(){var d=document.documentElement,t="dark";try{t=localStorage.getItem("theme")||"dark";if(t==="system")t=matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";}catch(e){}d.classList.add(t==="light"?"light":"dark");d.style.colorScheme=t==="light"?"light":"dark";})();
+</script>
+</head>
+<body>
+<div id="root"></div>
+<script type="module" src="./src/login/main.jsx"></script>
+</body>
+</html>

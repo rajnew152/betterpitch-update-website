@@ -9,6 +9,10 @@ export default defineConfig(({ command }) => ({
   /* relative URLs, so dist/ works from any path (like the static site) */
   base: './',
   plugins: [react()],
+  build: {
+    /* two pages: the homepage and the log in / sign up flow */
+    rollupOptions: { input: { main: here('index.html'), login: here('login.html') } },
+  },
   css: {
     postcss: {
       /* production: drop the rules of tailwind.css that nothing on the page uses */
