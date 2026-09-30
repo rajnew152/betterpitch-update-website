@@ -314,7 +314,7 @@
       const bright = clamp(C.appearance.brightness * theme.brightness * (1 + 0.25 * hoverAmt) * (1 + 0.55 * voiceAmt * level), 0, 3);
       /* voice modulation: the surface rolls in bands (latitude + a diagonal wave)
          and swells with the level; faster and deeper the louder it gets */
-      const vAmp = voiceAmt * (0.035 + 0.24 * level), vSwell = voiceAmt * 0.07 * level;
+      const vAmp = voiceAmt * (0.02 + 0.13 * level), vSwell = voiceAmt * 0.06 * level;
       const vT1 = vPh1, vT2 = vPh2;
       const voiceWarp = (x, y, z) => 1 + vSwell + vAmp * (0.6 * Math.sin(y * 7 + vT1) + 0.4 * Math.sin(x * 5 - z * 4 - vT2));
       const tw = clamp(C.appearance.twinkleAmount, 0, 1), twS = C.appearance.twinkleSpeed;
@@ -334,7 +334,10 @@
 
       /* voice shape (see wShape): S is the original orb's canvas size in these
          pixels, ps its pixel scale (the formulas were written for a ~560px orb) */
-      const morph = voiceAmt < 0.001 ? 0 : voiceAmt * voiceAmt * (3 - 2 * voiceAmt);
+      /* a voice session no longer turns the dots into the ring / wave shape: after the
+         burst they gather back into the sphere with its "AI" mark, which then
+         ripples, glows and flashes with the voice */
+      const morph = 0;
       const WS = R * 2.6, ps = WS / 560, wT = wPh;
       const ringR = 0.306 * WS, orbBase = 0.265 * WS;
       const outerR = [0.39 * WS, 0.43 * WS, 0.47 * WS];
@@ -633,8 +636,8 @@
       waveI += (iT - waveI) * (1 - Math.exp(-dt / 0.18));
       const vs = 1 - Math.exp(-dt / 0.35);
       voiceAmt += ((voiceOn && clock >= spreadUntil - 0.35 ? 1 : 0) - voiceAmt) * vs;
-      markAmt += ((voiceOn ? 0 : 1) - markAmt) * (1 - Math.exp(-dt / (voiceOn ? 0.18 : 0.45)));
-      if (!voiceOn && level * 0.6 > flash) flash = level * 0.6;
+      markAmt += (1 - markAmt) * (1 - Math.exp(-dt / 0.45));
+      if (level * 0.6 > flash) flash = level * 0.6;
       const boost = 1 + C.scatter.spinBoost * scatter + C.hover.spin * hoverAmt + level * (voiceOn ? 1.6 : 1);
       spin += C.rotation.direction * (C.rotation.speed * (Math.PI / 180) * boost + spinKick) * dt;
 

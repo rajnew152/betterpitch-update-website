@@ -226,10 +226,22 @@
        fire wheel events, so the wheel itself is the only check needed. */
     {
       const GLIDE = 0.95;   // s per step
+      /* the last step lands on "Meet the team" (the team panel pinned in place,
+         js/team.js) instead of the sentence timeline's end: one scroll from the
+         final word glides through the hold and the title / panel rise, where it
+         used to take a step to the timeline's end plus a viewport of free scroll */
+      let teamST = null;
+      const teamY = () => {
+        if (!teamST || !teamST.pin) teamST = ScrollTrigger.getAll().find((s) => s.pin && s.trigger && s.trigger.classList && s.trigger.classList.contains("team-panel")) || null;
+        return teamST ? teamST.start : null;
+      };
       const stepY = () => {
         const st = tl.scrollTrigger;
         if (!st) return [];
-        return snapPoints().map((p) => st.start + p * (st.end - st.start));
+        const ys = snapPoints().map((p) => st.start + p * (st.end - st.start));
+        const team = teamY();
+        if (team !== null && team > ys[ys.length - 1]) ys[ys.length - 1] = team;
+        return ys;
       };
       let gliding = false, quietUntil = 0, raf = 0;
       const easeInOut = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);

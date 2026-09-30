@@ -30,7 +30,8 @@
 .bp-sphere-module.is-voice > .bp-sphere-grid { opacity: 1.0; }
 /* while the dots form the voice orb, the bars + status sit above its centre wave
    and the mic just below it, as on the original orb */
-.bp-sphere-module.is-voice > .bp-sphere-controls { top: 50%; }
+/* in a voice session the controls keep their place below the "AI" mark (the sphere
+   no longer turns into the centre-wave shape they used to sit above) */
 @media (prefers-reduced-motion: reduce) {
   .bp-sphere-module > .bp-sphere-controls { transition: none; }
 }
